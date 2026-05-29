@@ -22,6 +22,7 @@ model User {
   address       UserAddress?
   credentials   UserCredentials?
   refreshTokens RefreshToken[]
+  movements     Movement[]
 }
 
 model UserAddress {
@@ -47,4 +48,27 @@ model RefreshToken {
   issuedAt  DateTime  @db.Timestamptz(3)
   revokedAt DateTime? @db.Timestamptz(3)
   jti       String    @unique @db.Uuid
+}
+
+enum MovementType {
+  DEPOSIT
+  SWAP_IN
+  SWAP_OUT
+  SWAP_FEE
+  WITHDRAW
+}
+
+enum CurrencyType {
+  BRL
+  BTC
+  ETH
+  USDT
+}
+
+model Movement {
+  id           String       @id @db.Uuid
+  user         User         @relation(fields: [accountOwner], references: [id])
+  accountOwner String       @db.Uuid
+  type         MovementType
+  currency     CurrencyType
 }
