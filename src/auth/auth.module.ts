@@ -5,11 +5,18 @@ import { DatabaseModule } from '@/database/database.module';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     DatabaseModule,
-    JwtModule.register({ global: true, secret: '!!!CHANGE THIS VALUE!!!!' }),
+    JwtModule.registerAsync({
+      global: true,
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AuthController],
   providers: [AuthService],

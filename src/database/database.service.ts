@@ -8,8 +8,8 @@ import { PrismaClient } from '@/prisma/client';
 export class DatabaseService extends PrismaClient {
   constructor(configService: ConfigService) {
     const adapter = new PrismaPg({
-      connectionString: configService.get<string>('DATABASE_URL'),
-      password: configService.get<string>('POSTGRES_PASSWORD'),
+      connectionString: configService.get<string>('database.connectionString'),
+      password: configService.get<string>('database.password'),
     });
     super({ adapter });
   }
