@@ -3,11 +3,11 @@ import { Reflector } from '@nestjs/core';
 import { Body, Controller, HttpCode, HttpStatus, Post, Res, UsePipes } from '@nestjs/common';
 
 import { Public } from '@/utils';
-import { type LoginDTO, loginSchema } from '@/dtos/login.dto';
 import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
-import { type RegisterDTO, registerSchema } from '@/dtos/register.dto';
 
 import { AuthService } from './auth.service';
+import { type LoginDTO, loginSchema } from './dtos/login.dto';
+import { type RegisterDTO, registerSchema } from './dtos/register.dto';
 
 @Controller('auth')
 export class AuthController {

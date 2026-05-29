@@ -3,9 +3,10 @@ import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 
-import type { LoginDTO } from '@/dtos/login.dto';
-import type { RegisterDTO } from '@/dtos/register.dto';
 import { DatabaseService } from '@/database/database.service';
+
+import type { LoginDTO } from './dtos/login.dto';
+import type { RegisterDTO } from './dtos/register.dto';
 
 @Injectable()
 export class AuthService {
