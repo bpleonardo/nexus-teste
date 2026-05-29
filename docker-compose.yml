@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: postgres:latest
+    env_file:
+      - ./.env
+    restart: no
+    volumes:
+      - postgres_data:/var/lib/postgresql/18/docker
+    ports:
+      - "5432:5432"
+volumes:
+  postgres_data:
