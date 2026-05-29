@@ -95,6 +95,7 @@ export class AuthService {
         data: {
           id: randomUUID(),
           userId: user.id,
+          issuedAt: new Date(),
           jti: payload.jti,
         },
       });

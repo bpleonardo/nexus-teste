@@ -44,6 +44,7 @@ model RefreshToken {
   id        String    @id @db.Uuid
   user      User      @relation(fields: [userId], references: [id])
   userId    String    @db.Uuid
-  revokedAt DateTime?
+  issuedAt  DateTime  @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
   jti       String    @unique @db.Uuid
 }
