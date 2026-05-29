@@ -1,10 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Res, UsePipes } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
-import { type RegisterDTO, registerSchema } from '@/dtos/register.dto';
-import { type LoginDTO, loginSchema } from '@/dtos/login.dto';
 import type { Response } from 'express';
 import { Reflector } from '@nestjs/core';
+import { Body, Controller, HttpCode, HttpStatus, Post, Res, UsePipes } from '@nestjs/common';
+
+import { type LoginDTO, loginSchema } from '@/dtos/login.dto';
+import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
+import { type RegisterDTO, registerSchema } from '@/dtos/register.dto';
+
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -40,4 +42,6 @@ export class AuthController {
 
     return { token };
   }
+
+  // TODO: refresh, logout
 }

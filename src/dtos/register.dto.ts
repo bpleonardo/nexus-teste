@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { zodCpfValidator } from '@/utils';
 
 export const registerSchema = z.object({

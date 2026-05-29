@@ -1,10 +1,11 @@
-import { DatabaseService } from '@/database/database.service';
 import * as argon2 from 'argon2';
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
-import type { RegisterDTO } from '@/dtos/register.dto';
-import type { LoginDTO } from '@/dtos/login.dto';
+import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
-import { randomBytes, randomUUID } from 'crypto';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+
+import type { LoginDTO } from '@/dtos/login.dto';
+import type { RegisterDTO } from '@/dtos/register.dto';
+import { DatabaseService } from '@/database/database.service';
 
 @Injectable()
 export class AuthService {
