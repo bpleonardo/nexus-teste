@@ -1,11 +1,17 @@
 import { DatabaseService } from '@/database/database.service';
 import * as argon2 from 'argon2';
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { RegisterDTO } from '@/dtos/register.dto';
+import type { LoginDTO } from '@/dtos/login.dto';
+import { JwtService } from '@nestjs/jwt';
+import { randomBytes, randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
-  constructor(private dbService: DatabaseService) {}
+  constructor(
+    private dbService: DatabaseService,
+    private jwtService: JwtService,
+  ) {}
 
   private async hashPassword(password: string): Promise<string> {
     return argon2.hash(password);
@@ -27,7 +33,7 @@ export class AuthService {
 
         await tx.userCredentials.create({
           data: {
-            userId: user.id,
+            email: user.email,
             password: await this.hashPassword(dto.password),
           },
         });
@@ -44,5 +50,61 @@ export class AuthService {
       }
       throw error;
     }
+  }
+
+  async login(dto: LoginDTO) {
+    const credentials = await this.dbService.userCredentials.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+
+    if (!credentials) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Invalid email or password.',
+      });
+    }
+
+    const passwordMatches = await argon2.verify(credentials.password, dto.password);
+
+    if (!passwordMatches) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Invalid email or password.',
+      });
+    }
+
+    const user = await this.dbService.user.findUnique({ where: { email: credentials.email } });
+
+    if (!user) {
+      // User was probably deleted after we validated the credentials, but before we fetched the user data.
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Invalid email or password.',
+      });
+    }
+
+    const payload = { jti: randomUUID(), sub: user.id, name: user.name };
+    const token = await this.jwtService.signAsync(payload, { expiresIn: '5m', notBefore: 0 });
+
+    let refreshToken: string | null = null;
+    if (dto.persistent) {
+      const refreshInDb = await this.dbService.refreshToken.create({
+        data: {
+          id: randomUUID(),
+          userId: user.id,
+          jti: payload.jti,
+        },
+      });
+
+      const refreshPayload = { jti: refreshInDb.id, sub: user.id };
+      refreshToken = await this.jwtService.signAsync(refreshPayload, {
+        expiresIn: '7d',
+        notBefore: 0,
+      });
+    }
+
+    return { token, refreshToken };
   }
 }
