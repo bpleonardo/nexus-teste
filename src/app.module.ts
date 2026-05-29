@@ -4,10 +4,12 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
+import { DatabaseService } from './database/database.service';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [AuthModule],
+  imports: [ConfigModule.forRoot(), AuthModule],
   controllers: [AppController, AuthController],
-  providers: [AppService, AuthService],
+  providers: [AppService, AuthService, DatabaseService],
 })
 export class AppModule {}

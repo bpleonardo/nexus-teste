@@ -9,7 +9,7 @@ export class AuthController {
 
   @Post('register')
   @UsePipes(new ZodValidationPipe(registerSchema))
-  register(@Body() body: RegisterDTO) {
-    return { message: 'Registration successful', data: body };
+  async register(@Body() body: RegisterDTO) {
+    await this.authService.register(body);
   }
 }
