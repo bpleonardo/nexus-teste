@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { Reflector } from '@nestjs/core';
 import { Body, Controller, HttpCode, HttpStatus, Post, Res, UsePipes } from '@nestjs/common';
 
+import { Public } from '@/utils';
 import { type LoginDTO, loginSchema } from '@/dtos/login.dto';
 import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
 import { type RegisterDTO, registerSchema } from '@/dtos/register.dto';
@@ -20,12 +21,14 @@ export class AuthController {
   }
 
   @Post('register')
+  @Public()
   @UsePipes(new ZodValidationPipe(registerSchema))
   async register(@Body() body: RegisterDTO) {
     await this.authService.register(body);
   }
 
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(loginSchema))
   async login(@Res({ passthrough: true }) res: Response, @Body() body: LoginDTO) {
