@@ -4,7 +4,10 @@ const e = process.env;
 
 export default () => {
   const data = {
-    port: parseInt(e.PORT || '3000'),
+    app: {
+      port: parseInt(e.PORT || '3000'),
+      transactionTax: parseFloat(e.TRANSACTION_TAX || '1.5') / 100,
+    },
     database: {
       username: e.DB_USERNAME || 'postgres',
       password: e.DB_PASSWORD,

@@ -1,6 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import type { RedisClientType } from 'redis';
+import { ConfigService } from '@nestjs/config';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 import { REDIS_CLIENT } from '@/constants';
@@ -20,10 +21,11 @@ export class QuoteService {
 
   constructor(
     private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
     @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
   ) {}
 
-  async getQuote(from: string, to: string, useCache: boolean = true) {
+  async getQuote(from: string, to: string, amount: number, useCache: boolean = true) {
     const fromId = this.FROM_MAP[from.toUpperCase()];
     const toId = this.TO_MAP[to.toUpperCase()];
 
@@ -36,19 +38,27 @@ export class QuoteService {
     if (useCache) {
       const cachedQuote = await this.redisClient.get(key);
       if (cachedQuote) {
-        return { price: parseFloat(cachedQuote) };
+        const calculated = parseFloat(cachedQuote) * amount;
+        const tax = calculated * this.configService.get('app.transactionTax');
+        const finalAmount = calculated - tax;
+
+        return { amount: finalAmount, tax, quote: parseFloat(cachedQuote) };
       }
     }
 
     const url = `${this.geckoApiUrl}/simple/price?ids=${fromId}&vs_currencies=${toId}`;
 
     const response = await firstValueFrom(this.httpService.get(url));
-    const price = response.data[fromId][toId];
+    const quote = response.data[fromId][toId];
 
-    await this.redisClient.set(key, price.toString(), {
+    await this.redisClient.set(key, quote.toString(), {
       expiration: { type: 'EX', value: 5 * 60 },
     }); // cache for 5 minutes.
 
-    return { price };
+    const calculated = quote * amount;
+    const tax = calculated * this.configService.get('app.transactionTax');
+    const finalAmount = calculated - tax;
+
+    return { amount: finalAmount, tax, quote };
   }
 }

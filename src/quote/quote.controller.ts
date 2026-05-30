@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
 import { Public } from '@/utils';
 
@@ -10,7 +10,7 @@ export class QuoteController {
 
   @Get(':from/:to')
   @Public()
-  getQuote(@Param('from') from: string, @Param('to') to: string) {
-    return this.quoteService.getQuote(from, to);
+  getQuote(@Param('from') from: string, @Param('to') to: string, @Query('amount') amount: number) {
+    return this.quoteService.getQuote(from, to, amount);
   }
 }
