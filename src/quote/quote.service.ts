@@ -3,6 +3,8 @@ import { HttpService } from '@nestjs/axios';
 import type { RedisClientType } from 'redis';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
+import { REDIS_CLIENT } from '@/constants';
+
 @Injectable()
 export class QuoteService {
   private readonly geckoApiUrl = 'https://api.coingecko.com/api/v3';
@@ -18,7 +20,7 @@ export class QuoteService {
 
   constructor(
     private readonly httpService: HttpService,
-    @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
+    @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
   ) {}
 
   async getQuote(from: string, to: string, useCache: boolean = true) {
