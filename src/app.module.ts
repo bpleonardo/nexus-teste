@@ -6,8 +6,8 @@ import config from './config';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
-import { QuoteModule } from './quote/quote.module';
 import { RedisModule } from './redis/redis.module';
+import { WalletModule } from './wallet/wallet.module';
 import { DatabaseModule } from './database/database.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 
@@ -18,8 +18,8 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     DatabaseModule,
     RedisModule,
     AuthModule,
-    QuoteModule,
     WebhooksModule,
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [AppService],

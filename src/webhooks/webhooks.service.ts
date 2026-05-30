@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import type { RedisClientType } from 'redis';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { CurrencyType, MovementType } from '@/prisma/enums';
 
+import { REDIS_CLIENT } from '@/constants';
 import { DatabaseService } from '@/database/database.service';
 
 import type { DepositDTO } from './dtos/deposit.dto';
@@ -10,7 +12,10 @@ import type { DepositDTO } from './dtos/deposit.dto';
 export class WebhooksService {
   private readonly SUPPORTED_TOKENS = ['BRL', 'BTC', 'ETH'];
 
-  constructor(private readonly dbService: DatabaseService) {}
+  constructor(
+    private readonly dbService: DatabaseService,
+    @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
+  ) {}
 
   async deposit(body: DepositDTO) {
     // TODO: Validate idempotencyKey to prevent duplicate processing of the same deposit.
@@ -33,5 +38,8 @@ export class WebhooksService {
         amount,
       },
     });
+
+    // Invalidate the user's balance cache
+    await this.redisClient.del(`balance:${userId}`);
   }
 }

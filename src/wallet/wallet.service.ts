@@ -4,10 +4,13 @@ import type { RedisClientType } from 'redis';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
+import { DatabaseService } from '@/database/database.service';
+
 import { REDIS_CLIENT } from '@/constants';
+import { MovementType } from '@prisma/enums';
 
 @Injectable()
-export class QuoteService {
+export class WalletService {
   private readonly geckoApiUrl = 'https://api.coingecko.com/api/v3';
   private readonly FROM_MAP = {
     BTC: 'bitcoin',
@@ -22,6 +25,7 @@ export class QuoteService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly dbService: DatabaseService,
     @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
   ) {}
 
@@ -60,5 +64,64 @@ export class QuoteService {
     const finalAmount = calculated - tax;
 
     return { amount: finalAmount, tax, quote };
+  }
+
+  async getBalance(userId: string) {
+    const cachedBalance = await this.redisClient.get(`balance:${userId}`);
+    if (cachedBalance) {
+      return { balance: JSON.parse(cachedBalance) };
+    }
+
+    const userMovements = await this.dbService.movement.findMany({
+      where: { accountOwner: userId },
+    });
+
+    let balances = {
+      BRL: 0.0,
+      BTC: 0.0,
+      ETH: 0.0,
+      totalInBRL: 0.0,
+    };
+
+    for (const movement of userMovements) {
+      const currency = movement.currency;
+      const amount = movement.amount;
+
+      if (!balances[currency]) {
+        balances[currency] = 0.0;
+      }
+
+      if (movement.type === MovementType.DEPOSIT || movement.type === MovementType.SWAP_IN) {
+        balances[currency] += amount.toNumber();
+      } else if (
+        movement.type === MovementType.WITHDRAW ||
+        movement.type === MovementType.SWAP_OUT ||
+        movement.type === MovementType.SWAP_FEE
+      ) {
+        balances[currency] -= amount.toNumber();
+      }
+    }
+
+    // Calculate the total balance in BRL
+    for (const [currency, amount] of Object.entries(balances)) {
+      if (!amount) continue;
+      if (currency === 'BRL') {
+        balances.totalInBRL += amount;
+      }
+      if (currency === 'BTC' || currency === 'ETH') {
+        const quote = await this.getQuote(currency, 'BRL', 1, false);
+        balances.totalInBRL += amount * quote.quote;
+      }
+    }
+
+    // Cache for 1 hour.
+    // We invalidate this cache on every movement, so it should be fine.
+    // Although, totalInBRL might get a bit stale if the user doesn't make movements for a while,
+    // but we can live with that for now.
+    await this.redisClient.set(`balance:${userId}`, JSON.stringify(balances), {
+      expiration: { type: 'EX', value: 1 * 60 * 60 },
+    });
+
+    return { balance: balances };
   }
 }
