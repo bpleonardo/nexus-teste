@@ -1,14 +1,22 @@
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import type { RedisClientType } from 'redis';
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 
-import { IS_PUBLIC_KEY } from '@/constants';
+import { IS_PUBLIC_KEY, REDIS_CLIENT } from '@/constants';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
+    @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -32,6 +40,12 @@ export class AuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token);
+
+      const isBlacklisted = await this.redisClient.get(`blacklist:${payload.jti}`);
+      if (isBlacklisted) {
+        throw new UnauthorizedException({ message: 'Invalid token' });
+      }
+
       request['user'] = payload;
     } catch {
       throw new UnauthorizedException({ message: 'Invalid token' });

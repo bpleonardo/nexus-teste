@@ -1,9 +1,11 @@
 import * as argon2 from 'argon2';
 import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
+import type { RedisClientType } from 'redis';
 import { ConfigService } from '@nestjs/config';
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 
+import { REDIS_CLIENT } from '@/constants';
 import { DatabaseService } from '@/database/database.service';
 
 import type { LoginDTO } from './dtos/login.dto';
@@ -14,6 +16,7 @@ export class AuthService {
   constructor(
     private readonly dbService: DatabaseService,
     private readonly configService: ConfigService,
+    @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -118,6 +121,12 @@ export class AuthService {
     return { token, refreshToken };
   }
 
+  private blacklistToken(jti: string) {
+    return this.redisClient.set(`blacklist:${jti}`, 'r', {
+      expiration: { type: 'PX', value: this.configService.get('jwt.accessTokenExpiration')! },
+    });
+  }
+
   async refresh(refreshToken: string) {
     let decoded: any;
     const exception = new UnauthorizedException({
@@ -172,7 +181,8 @@ export class AuthService {
       data: { revokedAt: new Date() },
     });
 
-    // TODO: Blacklist old access token until it expires, to prevent reuse.
+    // Blacklist the old access token until it expires, to prevent reuse.
+    await this.blacklistToken(storedToken.jti);
 
     return { token, newRefreshToken };
   }
@@ -188,7 +198,9 @@ export class AuthService {
         data: { revokedAt: new Date() },
       });
 
-      // TODO: Blacklist all access tokens for this user until they expire, to prevent reuse.
+      for (const storedToken of allRefreshTokens) {
+        await this.blacklistToken(storedToken.jti);
+      }
     } else {
       const jti = accessToken.jti;
 
@@ -197,7 +209,7 @@ export class AuthService {
         data: { revokedAt: new Date() },
       });
 
-      // TODO: Blacklist this access token until it expires, to prevent reuse.
+      await this.blacklistToken(jti);
     }
   }
 }
