@@ -1,19 +1,21 @@
+const e = process.env;
+
 export default () => {
   const data = {
-    port: parseInt(process.env.PORT || '3000'),
+    port: parseInt(e.PORT || '3000'),
     database: {
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD,
-      url: process.env.DB_URL,
+      username: e.DB_USERNAME || 'postgres',
+      password: e.DB_PASSWORD,
+      url: e.DB_URL,
     },
     redis: {
-      username: process.env.REDIS_USERNAME || 'redis',
-      password: process.env.REDIS_PASSWORD,
+      username: e.REDIS_USERNAME || 'redis',
+      password: e.REDIS_PASSWORD,
     },
     jwt: {
-      accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION || '5m',
-      refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
-      secret: process.env.JWT_SECRET,
+      accessTokenExpiration: e.JWT_ACCESS_TOKEN_EXPIRATION || '5m',
+      refreshTokenExpiration: e.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
+      secret: e.JWT_SECRET,
     },
   };
 
