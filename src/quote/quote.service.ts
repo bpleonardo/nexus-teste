@@ -45,7 +45,9 @@ export class QuoteService {
     const response = await firstValueFrom(this.httpService.get(url));
     const price = response.data[fromId][toId];
 
-    await this.redisClient.set(key, price.toString(), { EX: 5 * 60 }); // cache for 5 minutes.
+    await this.redisClient.set(key, price.toString(), {
+      expiration: { type: 'EX', value: 5 * 60 },
+    }); // cache for 5 minutes.
 
     return { price };
   }
