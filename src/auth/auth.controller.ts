@@ -1,16 +1,6 @@
-import type { Request, Response } from 'express';
 import { Reflector } from '@nestjs/core';
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Req,
-  Res,
-  UnauthorizedException,
-  UsePipes,
-} from '@nestjs/common';
+import type { Request, Response } from 'express';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UsePipes } from '@nestjs/common';
 
 import { Public } from '@/utils';
 import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
@@ -21,13 +11,22 @@ import { type RegisterDTO, registerSchema } from './dtos/register.dto';
 
 @Controller('auth')
 export class AuthController {
-  private httpPath: string;
+  private readonly httpPath: string;
 
   constructor(
-    private authService: AuthService,
     reflector: Reflector,
+    private readonly authService: AuthService,
   ) {
-    this.httpPath = reflector.get<string>('path', AuthController) || 'auth';
+    this.httpPath = reflector.get<string>('path', AuthController);
+  }
+
+  private setRefreshTokenCookie(res: Response, refreshToken: string) {
+    res.cookie('refreshToken', refreshToken, {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // TODO: This should come from config.
+      httpOnly: true,
+      path: `/${this.httpPath}/refresh`,
+      secure: process.env.NODE_ENV === 'production',
+    });
   }
 
   @Post('register')
@@ -45,12 +44,7 @@ export class AuthController {
     const { token, refreshToken } = await this.authService.login(body);
 
     if (refreshToken) {
-      res.cookie('refreshToken', refreshToken, {
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        path: `/${this.httpPath}/refresh`,
-        secure: process.env.NODE_ENV === 'production',
-      });
+      this.setRefreshTokenCookie(res, refreshToken);
     }
 
     return { token };
@@ -64,12 +58,7 @@ export class AuthController {
 
     const { token, newRefreshToken } = await this.authService.refresh(refreshToken);
 
-    res.cookie('refreshToken', newRefreshToken, {
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      path: `/${this.httpPath}/refresh`,
-      secure: process.env.NODE_ENV === 'production',
-    });
+    this.setRefreshTokenCookie(res, newRefreshToken);
 
     return { token };
   }

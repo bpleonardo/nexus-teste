@@ -11,7 +11,7 @@ export default () => {
       password: process.env.REDIS_PASSWORD,
     },
     jwt: {
-      accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION || '15m',
+      accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION || '5m',
       refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
       secret: process.env.JWT_SECRET,
     },

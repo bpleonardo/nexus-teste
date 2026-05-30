@@ -12,9 +12,9 @@ import type { RegisterDTO } from './dtos/register.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private dbService: DatabaseService,
-    private configService: ConfigService,
-    private jwtService: JwtService,
+    private readonly dbService: DatabaseService,
+    private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
 
   private async hashPassword(password: string): Promise<string> {
@@ -46,7 +46,6 @@ export class AuthService {
       });
     } catch (error: any) {
       if (error.code === 'P2002') {
-        console.table(error.meta.target);
         throw new ConflictException({
           status: 409,
           message: 'User with this email, cpf, or phone already exists.',
@@ -68,6 +67,11 @@ export class AuthService {
   }
 
   async login(dto: LoginDTO) {
+    const exception = new UnauthorizedException({
+      status: 401,
+      message: 'Invalid email or password.',
+    });
+
     const credentials = await this.dbService.userCredentials.findUnique({
       where: {
         email: dto.email,
@@ -75,29 +79,20 @@ export class AuthService {
     });
 
     if (!credentials) {
-      throw new UnauthorizedException({
-        status: 401,
-        message: 'Invalid email or password.',
-      });
+      throw exception;
     }
 
     const passwordMatches = await argon2.verify(credentials.password, dto.password);
 
     if (!passwordMatches) {
-      throw new UnauthorizedException({
-        status: 401,
-        message: 'Invalid email or password.',
-      });
+      throw exception;
     }
 
     const user = await this.dbService.user.findUnique({ where: { email: credentials.email } });
 
     if (!user) {
       // User was probably deleted after we validated the credentials, but before we fetched the user data.
-      throw new UnauthorizedException({
-        status: 401,
-        message: 'Invalid email or password.',
-      });
+      throw exception;
     }
 
     const { token, jti } = await this.genAccessToken(user.id, user.name);
@@ -125,14 +120,15 @@ export class AuthService {
 
   async refresh(refreshToken: string) {
     let decoded: any;
+    const exception = new UnauthorizedException({
+      status: 401,
+      message: 'Invalid refresh token.',
+    });
 
     try {
       decoded = await this.jwtService.verifyAsync(refreshToken);
     } catch (error) {
-      throw new UnauthorizedException({
-        status: 401,
-        message: 'Invalid refresh token.',
-      });
+      throw exception;
     }
 
     const storedToken = await this.dbService.refreshToken.findUnique({
@@ -140,26 +136,17 @@ export class AuthService {
     });
 
     if (!storedToken) {
-      throw new UnauthorizedException({
-        status: 401,
-        message: 'Invalid refresh token.',
-      });
+      throw exception;
     }
 
     if (storedToken.revokedAt) {
-      throw new UnauthorizedException({
-        status: 401,
-        message: 'Invalid refresh token.',
-      });
+      throw exception;
     }
 
     const user = await this.dbService.user.findUnique({ where: { id: storedToken.userId } });
 
     if (!user) {
-      throw new UnauthorizedException({
-        status: 401,
-        message: 'Invalid refresh token.',
-      });
+      throw exception;
     }
 
     const { token, jti } = await this.genAccessToken(user.id, user.name);

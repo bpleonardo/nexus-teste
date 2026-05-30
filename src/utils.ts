@@ -1,4 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
+import { IS_PUBLIC_KEY } from './constants';
 
 export function zodCpfValidator(cpf: string): boolean {
   // https://www.geradorcpf.com/algoritmo_do_cpf.htm
@@ -52,5 +53,4 @@ export function flattenZodErrors(obj: any, prefix = ''): Record<string, string[]
   return result;
 }
 
-export const IS_PUBLIC_KEY = '_isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
