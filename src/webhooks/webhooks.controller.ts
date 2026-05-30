@@ -1,4 +1,5 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UsePipes } from '@nestjs/common';
+import type { Response } from 'express';
+import { Body, Controller, HttpCode, HttpStatus, Post, Res, UsePipes } from '@nestjs/common';
 
 import { Public } from '@/utils';
 import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
@@ -14,7 +15,10 @@ export class WebhooksController {
   @Public()
   @UsePipes(new ZodValidationPipe(depositSchema))
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deposit(@Body() body: DepositDTO) {
-    await this.webhooksService.deposit(body);
+  async deposit(@Body() body: DepositDTO, @Res({ passthrough: true }) res: Response) {
+    const { replayed } = await this.webhooksService.deposit(body);
+    if (replayed) {
+      res.setHeader('Idempotency-Replayed', 'true');
+    }
   }
 }

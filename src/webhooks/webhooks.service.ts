@@ -17,9 +17,14 @@ export class WebhooksService {
     @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
   ) {}
 
-  async deposit(body: DepositDTO) {
-    // TODO: Validate idempotencyKey to prevent duplicate processing of the same deposit.
+  async deposit(body: DepositDTO): Promise<{ replayed: boolean }> {
     const { userId, token, amount, idempotencyKey } = body;
+
+    const alreadyProcessed = await this.redisClient.get(`deposit:${idempotencyKey}`);
+
+    if (alreadyProcessed) {
+      return { replayed: true };
+    }
 
     if (!this.SUPPORTED_TOKENS.includes(token)) {
       throw new BadRequestException({
@@ -47,7 +52,13 @@ export class WebhooksService {
       },
     });
 
+    await this.redisClient.set(`deposit:${idempotencyKey}`, 'true', {
+      expiration: { type: 'EX', value: 60 * 60 * 24 },
+    }); // Cache for 24 hours
+
     // Invalidate the user's balance cache
     await this.redisClient.del(`balance:${userId}`);
+
+    return { replayed: false };
   }
 }
