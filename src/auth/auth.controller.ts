@@ -73,4 +73,12 @@ export class AuthController {
 
     return { token };
   }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@Req() req: Request, @Body('allDevices') allDevices: boolean) {
+    const accessToken = req['user'];
+
+    await this.authService.logout(accessToken, allDevices);
+  }
 }

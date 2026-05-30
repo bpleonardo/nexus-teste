@@ -184,10 +184,28 @@ export class AuthService {
 
     return { token, newRefreshToken };
   }
-  catch() {
-    throw new UnauthorizedException({
-      status: 401,
-      message: 'Invalid refresh token.',
-    });
+
+  async logout(accessToken: Record<string, string>, allDevices: boolean) {
+    if (allDevices) {
+      const allRefreshTokens = await this.dbService.refreshToken.findMany({
+        where: { userId: accessToken.sub, revokedAt: null },
+      });
+
+      await this.dbService.refreshToken.updateMany({
+        where: { userId: accessToken.sub, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+
+      // TODO: Blacklist all access tokens for this user until they expire, to prevent reuse.
+    } else {
+      const jti = accessToken.jti;
+
+      await this.dbService.refreshToken.updateMany({
+        where: { jti, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+
+      // TODO: Blacklist this access token until it expires, to prevent reuse.
+    }
   }
 }
