@@ -6,11 +6,16 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { QuoteModule } from './quote/quote.module';
-import { DatabaseService } from './database/database.service';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true, load: [config] }), AuthModule, QuoteModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, load: [config] }),
+    DatabaseModule,
+    AuthModule,
+    QuoteModule,
+  ],
   controllers: [AppController],
-  providers: [AppService, DatabaseService],
+  providers: [AppService],
 })
 export class AppModule {}
