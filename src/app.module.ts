@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { QuoteModule } from './quote/quote.module';
 import { RedisModule } from './redis/redis.module';
 import { DatabaseModule } from './database/database.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DatabaseModule } from './database/database.module';
     RedisModule,
     AuthModule,
     QuoteModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
