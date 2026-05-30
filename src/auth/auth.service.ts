@@ -1,6 +1,7 @@
 import * as argon2 from 'argon2';
 import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
@@ -12,6 +13,7 @@ import type { RegisterDTO } from './dtos/register.dto';
 export class AuthService {
   constructor(
     private dbService: DatabaseService,
+    private configService: ConfigService,
     private jwtService: JwtService,
   ) {}
 
@@ -57,7 +59,10 @@ export class AuthService {
   private async genAccessToken(userId: string, name: string) {
     const payload = { jti: randomUUID(), sub: userId, name };
     return {
-      token: await this.jwtService.signAsync(payload, { expiresIn: '5m', notBefore: 0 }),
+      token: await this.jwtService.signAsync(payload, {
+        expiresIn: this.configService.get('jwt.accessTokenExpiration'),
+        notBefore: 0,
+      }),
       jti: payload.jti,
     };
   }
@@ -110,7 +115,7 @@ export class AuthService {
 
       const refreshPayload = { jti: refreshInDb.id };
       refreshToken = await this.jwtService.signAsync(refreshPayload, {
-        expiresIn: '7d',
+        expiresIn: this.configService.get('jwt.refreshTokenExpiration'),
         notBefore: 0,
       });
     }
