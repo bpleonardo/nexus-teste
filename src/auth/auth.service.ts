@@ -54,6 +54,14 @@ export class AuthService {
     }
   }
 
+  private async genAccessToken(userId: string, name: string) {
+    const payload = { jti: randomUUID(), sub: userId, name };
+    return {
+      token: await this.jwtService.signAsync(payload, { expiresIn: '5m', notBefore: 0 }),
+      jti: payload.jti,
+    };
+  }
+
   async login(dto: LoginDTO) {
     const credentials = await this.dbService.userCredentials.findUnique({
       where: {
@@ -87,8 +95,7 @@ export class AuthService {
       });
     }
 
-    const payload = { jti: randomUUID(), sub: user.id, name: user.name };
-    const token = await this.jwtService.signAsync(payload, { expiresIn: '5m', notBefore: 0 });
+    const { token, jti } = await this.genAccessToken(user.id, user.name);
 
     let refreshToken: string | null = null;
     if (dto.persistent) {
@@ -97,11 +104,11 @@ export class AuthService {
           id: randomUUID(),
           userId: user.id,
           issuedAt: new Date(),
-          jti: payload.jti,
+          jti: jti,
         },
       });
 
-      const refreshPayload = { jti: refreshInDb.id, sub: user.id };
+      const refreshPayload = { jti: refreshInDb.id };
       refreshToken = await this.jwtService.signAsync(refreshPayload, {
         expiresIn: '7d',
         notBefore: 0,
@@ -109,5 +116,78 @@ export class AuthService {
     }
 
     return { token, refreshToken };
+  }
+
+  async refresh(refreshToken: string) {
+    let decoded: any;
+
+    try {
+      decoded = await this.jwtService.verifyAsync(refreshToken);
+    } catch (error) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Invalid refresh token.',
+      });
+    }
+
+    const storedToken = await this.dbService.refreshToken.findUnique({
+      where: { id: decoded.jti },
+    });
+
+    if (!storedToken) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Invalid refresh token.',
+      });
+    }
+
+    if (storedToken.revokedAt) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Invalid refresh token.',
+      });
+    }
+
+    const user = await this.dbService.user.findUnique({ where: { id: storedToken.userId } });
+
+    if (!user) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'Invalid refresh token.',
+      });
+    }
+
+    const { token, jti } = await this.genAccessToken(user.id, user.name);
+
+    const newRefreshDb = await this.dbService.refreshToken.create({
+      data: {
+        id: randomUUID(),
+        userId: user.id,
+        issuedAt: new Date(),
+        jti: jti,
+      },
+    });
+
+    const refreshPayload = { jti: newRefreshDb.id };
+
+    const newRefreshToken = await this.jwtService.signAsync(refreshPayload, {
+      expiresIn: '7d',
+      notBefore: 0,
+    });
+
+    await this.dbService.refreshToken.update({
+      where: { id: storedToken.id },
+      data: { revokedAt: new Date() },
+    });
+
+    // TODO: Blacklist old access token until it expires, to prevent reuse.
+
+    return { token, newRefreshToken };
+  }
+  catch() {
+    throw new UnauthorizedException({
+      status: 401,
+      message: 'Invalid refresh token.',
+    });
   }
 }

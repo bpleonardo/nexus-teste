@@ -1,6 +1,16 @@
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { Reflector } from '@nestjs/core';
-import { Body, Controller, HttpCode, HttpStatus, Post, Res, UsePipes } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UsePipes,
+} from '@nestjs/common';
 
 import { Public } from '@/utils';
 import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
@@ -46,5 +56,21 @@ export class AuthController {
     return { token };
   }
 
-  // TODO: refresh, logout
+  @Post('refresh')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies['refreshToken'];
+
+    const { token, newRefreshToken } = await this.authService.refresh(refreshToken);
+
+    res.cookie('refreshToken', newRefreshToken, {
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      path: `/${this.httpPath}/refresh`,
+      secure: process.env.NODE_ENV === 'production',
+    });
+
+    return { token };
+  }
 }
