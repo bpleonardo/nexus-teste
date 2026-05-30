@@ -49,6 +49,7 @@ export class WebhooksService {
         currency: CurrencyType[token],
         type: MovementType.DEPOSIT,
         amount,
+        createdAt: new Date(),
       },
     });
 

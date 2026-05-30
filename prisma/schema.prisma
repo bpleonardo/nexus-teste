@@ -71,4 +71,5 @@ model Movement {
   type         MovementType
   currency     CurrencyType
   amount       Decimal      @db.Decimal(20, 8)
+  createdAt    DateTime     @db.Timestamptz(3)
 }

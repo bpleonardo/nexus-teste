@@ -162,6 +162,7 @@ export class WalletService {
         currency: currency.toUpperCase() as keyof typeof CurrencyType,
         type: MovementType.WITHDRAW,
         amount,
+        createdAt: new Date(),
       },
     });
 
