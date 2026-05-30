@@ -47,7 +47,7 @@ export class AuthController {
       this.setRefreshTokenCookie(res, refreshToken);
     }
 
-    return { token };
+    return { success: true, data: { token } };
   }
 
   @Post('refresh')
@@ -60,7 +60,7 @@ export class AuthController {
 
     this.setRefreshTokenCookie(res, newRefreshToken);
 
-    return { token };
+    return { success: true, data: { token } };
   }
 
   @Post('logout')

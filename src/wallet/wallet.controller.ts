@@ -29,16 +29,16 @@ export class WalletController {
   }
 
   @Get('balance')
-  getBalance(@Req() req: Request) {
+  async getBalance(@Req() req: Request) {
     const user = req['user'];
 
-    return this.walletService.getBalance(user.sub);
+    return { success: true, data: { balance: await this.walletService.getBalance(user.sub) } };
   }
 
   @Post('withdraw')
   @UsePipes(new ZodValidationPipe(withdrawSchema))
   @HttpCode(HttpStatus.NO_CONTENT)
-  withdraw(@Req() req: Request, @Body() body: WithdrawDTO) {
-    return this.walletService.withdraw(req['user'].sub, body.currency, body.amount);
+  async withdraw(@Req() req: Request, @Body() body: WithdrawDTO) {
+    await this.walletService.withdraw(req['user'].sub, body.currency, body.amount);
   }
 }

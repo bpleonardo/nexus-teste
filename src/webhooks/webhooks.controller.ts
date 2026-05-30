@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UsePipes } from '@nestjs/common';
 
 import { Public } from '@/utils';
 import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
@@ -13,6 +13,7 @@ export class WebhooksController {
   @Post('deposit')
   @Public()
   @UsePipes(new ZodValidationPipe(depositSchema))
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deposit(@Body() body: DepositDTO) {
     await this.webhooksService.deposit(body);
   }

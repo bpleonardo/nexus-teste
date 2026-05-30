@@ -1,6 +1,7 @@
 import { z, ZodError, ZodType } from 'zod';
 import { PipeTransform, ArgumentMetadata, BadRequestException } from '@nestjs/common';
 
+import { Errors } from '@/constants';
 import { flattenZodErrors } from '@/utils';
 
 export class ZodValidationPipe implements PipeTransform {
@@ -14,9 +15,10 @@ export class ZodValidationPipe implements PipeTransform {
       if (error instanceof ZodError) {
         const err = z.treeifyError(error);
         throw new BadRequestException({
-          status: 400,
+          success: false,
+          code: Errors.INVALID_REQUEST,
           message: 'Validation failed',
-          errors: flattenZodErrors(err),
+          data: { errors: flattenZodErrors(err) },
         });
       }
 

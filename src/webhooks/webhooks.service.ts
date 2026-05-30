@@ -1,9 +1,9 @@
 import type { RedisClientType } from 'redis';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { CurrencyType, MovementType } from '@/prisma/enums';
 
-import { REDIS_CLIENT } from '@/constants';
+import { Errors, REDIS_CLIENT } from '@/constants';
 import { DatabaseService } from '@/database/database.service';
 
 import type { DepositDTO } from './dtos/deposit.dto';
@@ -22,12 +22,20 @@ export class WebhooksService {
     const { userId, token, amount, idempotencyKey } = body;
 
     if (!this.SUPPORTED_TOKENS.includes(token)) {
-      throw new NotFoundException({ message: 'Unsupported token' });
+      throw new BadRequestException({
+        success: false,
+        code: Errors.INVALID_CURRENCY,
+        message: 'Unsupported token',
+      });
     }
 
     const user = await this.dbService.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException({ message: 'User not found' });
+      throw new NotFoundException({
+        success: false,
+        code: Errors.NOT_FOUND,
+        message: 'User not found',
+      });
     }
 
     await this.dbService.movement.create({

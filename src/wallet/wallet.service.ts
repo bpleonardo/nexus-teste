@@ -6,7 +6,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
 
-import { REDIS_CLIENT } from '@/constants';
+import { Errors, REDIS_CLIENT } from '@/constants';
 import { CurrencyType, MovementType } from '@prisma/enums';
 
 @Injectable()
@@ -34,7 +34,11 @@ export class WalletService {
     const toId = this.TO_MAP[to.toUpperCase()];
 
     if (!fromId || !toId) {
-      throw new BadRequestException({ message: 'Invalid currency' });
+      throw new BadRequestException({
+        success: false,
+        code: Errors.INVALID_CURRENCY,
+        message: 'Invalid currency',
+      });
     }
 
     const key = `quote:${fromId}:${toId}`;
@@ -133,7 +137,11 @@ export class WalletService {
     currency = currency.toUpperCase();
 
     if (CurrencyType[currency] === undefined) {
-      throw new BadRequestException({ message: 'Invalid currency' });
+      throw new BadRequestException({
+        success: false,
+        code: Errors.INVALID_CURRENCY,
+        message: 'Invalid currency',
+      });
     }
 
     const balanceData = await this.getBalance(userId, false, false);
@@ -141,7 +149,11 @@ export class WalletService {
     const userBalance = balanceData.balance[currency.toUpperCase()];
 
     if (userBalance < amount) {
-      throw new BadRequestException({ message: 'Insufficient balance' });
+      throw new BadRequestException({
+        success: false,
+        code: Errors.NO_FUNDS,
+        message: 'Insufficient balance',
+      });
     }
 
     await this.dbService.movement.create({

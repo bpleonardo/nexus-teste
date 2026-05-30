@@ -5,7 +5,7 @@ import type { RedisClientType } from 'redis';
 import { ConfigService } from '@nestjs/config';
 import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 
-import { REDIS_CLIENT } from '@/constants';
+import { Errors, REDIS_CLIENT } from '@/constants';
 import { DatabaseService } from '@/database/database.service';
 
 import type { LoginDTO } from './dtos/login.dto';
@@ -50,7 +50,8 @@ export class AuthService {
     } catch (error: any) {
       if (error.code === 'P2002') {
         throw new ConflictException({
-          status: 409,
+          success: false,
+          code: Errors.ALREADY_EXISTS,
           message: 'User with this email, cpf, or phone already exists.',
         });
       }

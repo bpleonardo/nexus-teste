@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { IS_PUBLIC_KEY, REDIS_CLIENT } from '@/constants';
+import { Errors, IS_PUBLIC_KEY, REDIS_CLIENT } from '@/constants';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -35,7 +35,11 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException({ message: 'No token provided' });
+      throw new UnauthorizedException({
+        success: false,
+        code: Errors.MISSING_TOKEN,
+        message: 'No token provided',
+      });
     }
 
     try {
@@ -43,12 +47,20 @@ export class AuthGuard implements CanActivate {
 
       const isBlacklisted = await this.redisClient.get(`blacklist:${payload.jti}`);
       if (isBlacklisted) {
-        throw new UnauthorizedException({ message: 'Invalid token' });
+        throw new UnauthorizedException({
+          success: false,
+          code: Errors.INVALID_TOKEN,
+          message: 'Invalid token',
+        });
       }
 
       request['user'] = payload;
     } catch {
-      throw new UnauthorizedException({ message: 'Invalid token' });
+      throw new UnauthorizedException({
+        success: false,
+        code: Errors.INVALID_TOKEN,
+        message: 'Invalid token',
+      });
     }
 
     return true;
