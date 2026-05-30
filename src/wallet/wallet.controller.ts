@@ -1,9 +1,22 @@
 import type { Request } from 'express';
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  UsePipes,
+} from '@nestjs/common';
 
 import { Public } from '@/utils';
 
 import { WalletService } from './wallet.service';
+import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
+import { type WithdrawDTO, withdrawSchema } from './dtos/withdraw.dto';
 
 @Controller('wallet')
 export class WalletController {
@@ -20,5 +33,12 @@ export class WalletController {
     const user = req['user'];
 
     return this.walletService.getBalance(user.sub);
+  }
+
+  @Post('withdraw')
+  @UsePipes(new ZodValidationPipe(withdrawSchema))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  withdraw(@Req() req: Request, @Body() body: WithdrawDTO) {
+    return this.walletService.withdraw(req['user'].sub, body.currency, body.amount);
   }
 }

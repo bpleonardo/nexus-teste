@@ -7,7 +7,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DatabaseService } from '@/database/database.service';
 
 import { REDIS_CLIENT } from '@/constants';
-import { MovementType } from '@prisma/enums';
+import { CurrencyType, MovementType } from '@prisma/enums';
 
 @Injectable()
 export class WalletService {
@@ -66,10 +66,12 @@ export class WalletService {
     return { amount: finalAmount, tax, quote };
   }
 
-  async getBalance(userId: string) {
-    const cachedBalance = await this.redisClient.get(`balance:${userId}`);
-    if (cachedBalance) {
-      return { balance: JSON.parse(cachedBalance) };
+  async getBalance(userId: string, useCache: boolean = true, calcTotal: boolean = true) {
+    if (useCache) {
+      const cachedBalance = await this.redisClient.get(`balance:${userId}`);
+      if (cachedBalance) {
+        return { balance: JSON.parse(cachedBalance) };
+      }
     }
 
     const userMovements = await this.dbService.movement.findMany({
@@ -103,25 +105,54 @@ export class WalletService {
     }
 
     // Calculate the total balance in BRL
-    for (const [currency, amount] of Object.entries(balances)) {
-      if (!amount) continue;
-      if (currency === 'BRL') {
-        balances.totalInBRL += amount;
+    if (calcTotal) {
+      for (const [currency, amount] of Object.entries(balances)) {
+        if (!amount) continue;
+        if (currency === 'BRL') {
+          balances.totalInBRL += amount;
+        }
+        if (currency === 'BTC' || currency === 'ETH') {
+          const quote = await this.getQuote(currency, 'BRL', 1, false);
+          balances.totalInBRL += amount * quote.quote;
+        }
       }
-      if (currency === 'BTC' || currency === 'ETH') {
-        const quote = await this.getQuote(currency, 'BRL', 1, false);
-        balances.totalInBRL += amount * quote.quote;
-      }
+
+      // Cache for 1 hour.
+      // We invalidate this cache on every movement, so it should be fine.
+      // Although, totalInBRL might get a bit stale if the user doesn't make movements for a while,
+      // but we can live with that for now.
+      await this.redisClient.set(`balance:${userId}`, JSON.stringify(balances), {
+        expiration: { type: 'EX', value: 1 * 60 * 60 },
+      });
     }
 
-    // Cache for 1 hour.
-    // We invalidate this cache on every movement, so it should be fine.
-    // Although, totalInBRL might get a bit stale if the user doesn't make movements for a while,
-    // but we can live with that for now.
-    await this.redisClient.set(`balance:${userId}`, JSON.stringify(balances), {
-      expiration: { type: 'EX', value: 1 * 60 * 60 },
+    return { balance: balances };
+  }
+
+  async withdraw(userId: string, currency: string, amount: number) {
+    currency = currency.toUpperCase();
+
+    if (CurrencyType[currency] === undefined) {
+      throw new BadRequestException({ message: 'Invalid currency' });
+    }
+
+    const balanceData = await this.getBalance(userId, false, false);
+
+    const userBalance = balanceData.balance[currency.toUpperCase()];
+
+    if (userBalance < amount) {
+      throw new BadRequestException({ message: 'Insufficient balance' });
+    }
+
+    await this.dbService.movement.create({
+      data: {
+        accountOwner: userId,
+        currency: currency.toUpperCase() as keyof typeof CurrencyType,
+        type: MovementType.WITHDRAW,
+        amount,
+      },
     });
 
-    return { balance: balances };
+    await this.redisClient.del(`balance:${userId}`);
   }
 }
