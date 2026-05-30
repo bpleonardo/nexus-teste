@@ -163,7 +163,7 @@ export class AuthService {
     const refreshPayload = { jti: newRefreshDb.id };
 
     const newRefreshToken = await this.jwtService.signAsync(refreshPayload, {
-      expiresIn: '7d',
+      expiresIn: this.configService.get('jwt.refreshTokenExpiration'),
       notBefore: 0,
     });
 

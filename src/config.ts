@@ -1,3 +1,5 @@
+import ms, { StringValue } from 'ms';
+
 const e = process.env;
 
 export default () => {
@@ -13,8 +15,8 @@ export default () => {
       password: e.REDIS_PASSWORD,
     },
     jwt: {
-      accessTokenExpiration: e.JWT_ACCESS_TOKEN_EXPIRATION || '5m',
-      refreshTokenExpiration: e.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
+      accessTokenExpiration: ms((e.JWT_ACCESS_TOKEN_EXPIRATION as StringValue) || '5m'),
+      refreshTokenExpiration: ms((e.JWT_REFRESH_TOKEN_EXPIRATION as StringValue) || '7d'),
       secret: e.JWT_SECRET,
     },
   };
