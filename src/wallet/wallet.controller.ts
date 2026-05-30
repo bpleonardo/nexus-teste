@@ -35,6 +35,21 @@ export class WalletController {
     return { success: true, data: { balance: await this.walletService.getBalance(user.sub) } };
   }
 
+  @Get('movements')
+  async getMovements(
+    @Req() req: Request,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit: number = 10,
+    @Query('sort') sort: 'asc' | 'desc' = 'desc',
+  ) {
+    const user = req['user'];
+
+    return {
+      success: true,
+      data: { ...(await this.walletService.getMovements(user.sub, limit, sort, cursor)) },
+    };
+  }
+
   @Post('withdraw')
   @UsePipes(new ZodValidationPipe(withdrawSchema))
   @HttpCode(HttpStatus.NO_CONTENT)

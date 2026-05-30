@@ -168,4 +168,46 @@ export class WalletService {
 
     await this.redisClient.del(`balance:${userId}`);
   }
+
+  private genCursor(id: string, createdAt: Date) {
+    const timestamp = createdAt.getTime();
+    return Buffer.from(`${timestamp}:${id}`).toString('base64');
+  }
+
+  private getCursorData(cursor: string) {
+    const decoded = Buffer.from(cursor, 'base64').toString('ascii');
+    const [timestamp, id] = decoded.split(':');
+    return { createdAt: new Date(parseInt(timestamp)), id };
+  }
+
+  async getMovements(userId: string, limit: number, sort: 'asc' | 'desc', cursor?: string) {
+    const cursorQuery = cursor && { cursor: { ...this.getCursorData(cursor) }, skip: 1 };
+
+    const movements = await this.dbService.movement.findMany({
+      where: { accountOwner: userId },
+      orderBy: [{ createdAt: sort }, { id: sort }],
+      take: limit,
+      ...cursorQuery,
+    });
+
+    const total = movements.length;
+
+    const movementsArray = movements.map((movement) => ({
+      id: movement.id,
+      type: movement.type,
+      currency: movement.currency,
+      amount: movement.amount.toNumber(),
+      createdAt: movement.createdAt,
+    }));
+
+    const nextCursor =
+      movements.length === limit
+        ? this.genCursor(
+            movements[movements.length - 1].id,
+            movements[movements.length - 1].createdAt,
+          )
+        : null;
+
+    return { movements: movementsArray, total, nextCursor };
+  }
 }

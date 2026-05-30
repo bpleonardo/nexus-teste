@@ -46,6 +46,7 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token);
 
       const isBlacklisted = await this.redisClient.get(`blacklist:${payload.jti}`);
+
       if (isBlacklisted) {
         throw new UnauthorizedException({
           success: false,
