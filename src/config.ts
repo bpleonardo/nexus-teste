@@ -6,6 +6,10 @@ export default () => {
       password: process.env.DB_PASSWORD,
       url: process.env.DB_URL,
     },
+    redis: {
+      username: process.env.REDIS_USERNAME || 'redis',
+      password: process.env.REDIS_PASSWORD,
+    },
     jwt: {
       secret: process.env.JWT_SECRET,
     },
@@ -22,5 +26,6 @@ export default () => {
   if (!data.database.url) {
     throw new Error('Database URL is not set in environment variables.');
   }
+
   return data;
 };

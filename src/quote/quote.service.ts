@@ -1,6 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import type { RedisClientType } from 'redis';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class QuoteService {
@@ -15,9 +16,12 @@ export class QuoteService {
     BTC: 'btc',
   };
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
+  ) {}
 
-  async getQuote(from: string, to: string) {
+  async getQuote(from: string, to: string, useCache: boolean = true) {
     const fromId = this.FROM_MAP[from.toUpperCase()];
     const toId = this.TO_MAP[to.toUpperCase()];
 
@@ -25,14 +29,22 @@ export class QuoteService {
       throw new BadRequestException({ message: 'Invalid currency' });
     }
 
+    const key = `quote:${fromId}:${toId}`;
+
+    if (useCache) {
+      const cachedQuote = await this.redisClient.get(key);
+      if (cachedQuote) {
+        return { price: parseFloat(cachedQuote) };
+      }
+    }
+
     const url = `${this.geckoApiUrl}/simple/price?ids=${fromId}&vs_currencies=${toId}`;
 
-    try {
-      const response = await firstValueFrom(this.httpService.get(url));
-      const price = response.data[fromId][toId];
-      return { price };
-    } catch (error) {
-      throw new BadRequestException({ message: 'Error fetching quote' });
-    }
+    const response = await firstValueFrom(this.httpService.get(url));
+    const price = response.data[fromId][toId];
+
+    await this.redisClient.set(key, price.toString(), { EX: 5 * 60 }); // cache for 5 minutes.
+
+    return { price };
   }
 }

@@ -7,6 +7,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/18/docker
     ports:
-      - "5432:5432"
+      - '5432:5432'
+  redis:
+    image: redis:latest
+    env_file:
+      - ./.env
+    restart: no
+    ports:
+      - '6379:6379'
+
 volumes:
   postgres_data:
