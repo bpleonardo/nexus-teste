@@ -13,10 +13,11 @@ import {
 } from '@nestjs/common';
 
 import { Public } from '@/utils';
+import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
 
 import { WalletService } from './wallet.service';
-import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
 import { type WithdrawDTO, withdrawSchema } from './dtos/withdraw.dto';
+import { type SwapDTO, swapSchema } from './dtos/swap.dto';
 
 @Controller('wallet')
 export class WalletController {
@@ -55,5 +56,12 @@ export class WalletController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async withdraw(@Req() req: Request, @Body() body: WithdrawDTO) {
     await this.walletService.withdraw(req['user'].sub, body.currency, body.amount);
+  }
+
+  @Post('swap')
+  @UsePipes(new ZodValidationPipe(swapSchema))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async swap(@Req() req: Request, @Body() body: SwapDTO) {
+    await this.walletService.swap(req['user'].sub, body.fromCurrency, body.toCurrency, body.amount);
   }
 }

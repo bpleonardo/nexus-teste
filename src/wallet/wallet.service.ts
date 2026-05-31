@@ -211,4 +211,52 @@ export class WalletService {
 
     return { movements: movementsArray, total, nextCursor };
   }
+
+  async swap(userId: string, fromCurrency: string, toCurrency: string, amount: number) {
+    const quote = await this.getQuote(fromCurrency, toCurrency, amount, false);
+
+    const userBalance = await this.getBalance(userId, false, false);
+
+    if (userBalance.balance[fromCurrency.toUpperCase()] < amount) {
+      throw new BadRequestException({
+        success: false,
+        code: Errors.NO_FUNDS,
+        message: 'Insufficient balance',
+      });
+    }
+
+    await this.dbService.$transaction(async (tx) => {
+      await tx.movement.create({
+        data: {
+          accountOwner: userId,
+          currency: fromCurrency.toUpperCase() as keyof typeof CurrencyType,
+          type: MovementType.SWAP_OUT,
+          amount,
+          createdAt: new Date(),
+        },
+      });
+
+      await tx.movement.create({
+        data: {
+          accountOwner: userId,
+          currency: toCurrency.toUpperCase() as keyof typeof CurrencyType,
+          type: MovementType.SWAP_FEE,
+          amount: quote.tax,
+          createdAt: new Date(),
+        },
+      });
+
+      await tx.movement.create({
+        data: {
+          accountOwner: userId,
+          currency: toCurrency.toUpperCase() as keyof typeof CurrencyType,
+          type: MovementType.SWAP_IN,
+          amount: quote.amount + quote.tax,
+          createdAt: new Date(),
+        },
+      });
+    });
+
+    await this.redisClient.del(`balance:${userId}`);
+  }
 }
