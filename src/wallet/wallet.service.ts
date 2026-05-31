@@ -13,6 +13,7 @@ import { CurrencyType, MovementType } from '@prisma/enums';
 export class WalletService {
   private readonly geckoApiUrl = 'https://api.coingecko.com/api/v3';
   private readonly FROM_MAP = {
+    BRL: 'brazilian-real',
     BTC: 'bitcoin',
     ETH: 'ethereum',
   };
