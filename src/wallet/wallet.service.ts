@@ -164,6 +164,7 @@ export class WalletService {
         type: MovementType.WITHDRAW,
         amount,
         createdAt: new Date(),
+        transactionId: crypto.randomUUID(),
       },
     });
 
@@ -199,6 +200,7 @@ export class WalletService {
       currency: movement.currency,
       amount: movement.amount.toNumber(),
       createdAt: movement.createdAt,
+      transactionId: movement.transactionId,
     }));
 
     const nextCursor =
@@ -236,6 +238,8 @@ export class WalletService {
     }
 
     await this.dbService.$transaction(async (tx) => {
+      const transactionId = crypto.randomUUID();
+
       await tx.movement.create({
         data: {
           accountOwner: userId,
@@ -243,6 +247,7 @@ export class WalletService {
           type: MovementType.SWAP_OUT,
           amount,
           createdAt: new Date(),
+          transactionId,
         },
       });
 
@@ -253,6 +258,7 @@ export class WalletService {
           type: MovementType.SWAP_FEE,
           amount: quote.tax,
           createdAt: new Date(),
+          transactionId,
         },
       });
 
@@ -263,6 +269,7 @@ export class WalletService {
           type: MovementType.SWAP_IN,
           amount: quote.amount + quote.tax,
           createdAt: new Date(),
+          transactionId,
         },
       });
     });

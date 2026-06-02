@@ -65,11 +65,12 @@ enum CurrencyType {
 }
 
 model Movement {
-  id           String       @id @default(uuid()) @db.Uuid
-  user         User         @relation(fields: [accountOwner], references: [id])
-  accountOwner String       @db.Uuid
-  type         MovementType
-  currency     CurrencyType
-  amount       Decimal      @db.Decimal(20, 8)
-  createdAt    DateTime     @db.Timestamptz(3)
+  id            String       @id @default(uuid()) @db.Uuid
+  transactionId String       @db.Uuid
+  user          User         @relation(fields: [accountOwner], references: [id])
+  accountOwner  String       @db.Uuid
+  type          MovementType
+  currency      CurrencyType
+  amount        Decimal      @db.Decimal(20, 8)
+  createdAt     DateTime     @db.Timestamptz(3)
 }

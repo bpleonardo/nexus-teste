@@ -50,6 +50,7 @@ export class WebhooksService {
         type: MovementType.DEPOSIT,
         amount,
         createdAt: new Date(),
+        transactionId: crypto.randomUUID(),
       },
     });
 
