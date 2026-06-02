@@ -36,7 +36,7 @@ export class WalletController {
   async getBalance(@Req() req: Request) {
     const user = req['user'];
 
-    return { success: true, data: { balance: await this.walletService.getBalance(user.sub) } };
+    return { success: true, data: { ...(await this.walletService.getBalance(user.sub)) } };
   }
 
   @Get('movements')
