@@ -8,6 +8,7 @@ import { DatabaseService } from '@/database/database.service';
 
 import { Errors, REDIS_CLIENT } from '@/constants';
 import { CurrencyType, MovementType } from '@prisma/enums';
+import type { Transaction } from '@/utils';
 
 @Injectable()
 export class WalletService {
@@ -275,5 +276,96 @@ export class WalletService {
     });
 
     await this.redisClient.del(`balance:${userId}`);
+  }
+
+  async getTransactions(
+    userId: string,
+    limit: number,
+    sort: 'asc' | 'desc',
+    cursor: string | null,
+  ) {
+    const query = {
+      where: { accountOwner: userId },
+      orderBy: [{ createdAt: sort }, { transactionId: sort }, { id: sort }],
+      take: limit * 3, // We fetch 3 times the limit because some transactions have 3 movements (swap)
+      ...(cursor && { cursor: { ...this.getCursorData(cursor) }, skip: 1 }),
+    };
+
+    const movements = await this.dbService.movement.findMany(query);
+
+    const grouped = new Map<string, typeof movements>();
+    for (const movement of movements) {
+      const group = grouped.get(movement.transactionId);
+      if (group) {
+        group.push(movement);
+      } else {
+        grouped.set(movement.transactionId, [movement]);
+      }
+    }
+
+    const transactions: Transaction[] = [];
+
+    for (const [, group] of grouped) {
+      if (transactions.length >= limit) break;
+
+      if (group.length === 1) {
+        const movement = group[0];
+        if (movement.type === MovementType.DEPOSIT || movement.type === MovementType.WITHDRAW) {
+          transactions.push({
+            type: movement.type,
+            originToken: movement.currency,
+            destinationToken: null,
+            originAmount: movement.amount.toNumber(),
+            destinationAmount: null,
+            tax: null,
+            date: movement.createdAt,
+          });
+        }
+      } else {
+        const swapOut = group.find((m) => m.type === MovementType.SWAP_OUT);
+        const swapFee = group.find((m) => m.type === MovementType.SWAP_FEE);
+        const swapIn = group.find((m) => m.type === MovementType.SWAP_IN);
+
+        if (!swapOut || !swapFee || !swapIn) continue;
+
+        const tax = swapFee.amount.toNumber();
+        const grossAmount = swapIn.amount.toNumber();
+
+        transactions.push({
+          type: 'SWAP',
+          originToken: swapOut.currency,
+          destinationToken: swapIn.currency,
+          originAmount: swapOut.amount.toNumber(),
+          destinationAmount: grossAmount - tax,
+          tax,
+          date: swapOut.createdAt,
+        });
+      }
+    }
+
+    const transactionIds = [...grouped.keys()];
+    const lastTxId = transactions.length === limit ? transactionIds[transactions.length - 1] : null;
+    const lastTxMovements = lastTxId ? grouped.get(lastTxId) : null;
+    const lastMovement = lastTxMovements ? lastTxMovements[lastTxMovements.length - 1] : null;
+
+    const nextCursor = lastMovement
+      ? this.genCursor(lastMovement.id, lastMovement.createdAt)
+      : null;
+
+    let nextExists = 0;
+    if (nextCursor) {
+      nextExists = await this.dbService.movement.count({
+        ...query,
+        cursor: { ...this.getCursorData(nextCursor) },
+        skip: 1,
+        take: 1,
+      });
+    }
+
+    return {
+      transactions,
+      total: transactions.length,
+      nextCursor: nextExists ? nextCursor : null,
+    };
   }
 }

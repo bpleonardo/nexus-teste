@@ -68,4 +68,20 @@ export class WalletController {
   async swap(@Req() req: Request, @Body() body: SwapDTO) {
     await this.walletService.swap(req['user'].sub, body.fromCurrency, body.toCurrency, body.amount);
   }
+
+  @Get('transactions')
+  async getTransactions(
+    @Req() req: Request,
+    @Query('cursor') cursor: string,
+    @Query('limit', new DefaultValuePipe(10), new ParseIntPipe()) limit: number,
+    @Query('sort', new DefaultValuePipe('asc'), new AllowedValuesPipe(['asc', 'desc']))
+    sort: 'asc' | 'desc',
+  ) {
+    const user = req['user'];
+
+    return {
+      success: true,
+      data: { ...(await this.walletService.getTransactions(user.sub, limit, sort, cursor)) },
+    };
+  }
 }

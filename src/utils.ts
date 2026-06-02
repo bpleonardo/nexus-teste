@@ -54,3 +54,13 @@ export function flattenZodErrors(obj: any, prefix = ''): Record<string, string[]
 }
 
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+
+export type Transaction = {
+  type: 'DEPOSIT' | 'SWAP' | 'WITHDRAW';
+  originToken: string;
+  destinationToken: string | null;
+  originAmount: number;
+  destinationAmount: number | null;
+  tax: number | null;
+  date: Date;
+};
