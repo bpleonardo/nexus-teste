@@ -181,15 +181,15 @@ export class WalletService {
     return { createdAt: new Date(parseInt(timestamp)), id };
   }
 
-  async getMovements(userId: string, limit: number, sort: 'asc' | 'desc', cursor?: string) {
-    const cursorQuery = cursor && { cursor: { ...this.getCursorData(cursor) }, skip: 1 };
-
-    const movements = await this.dbService.movement.findMany({
+  async getMovements(userId: string, limit: number, sort: 'asc' | 'desc', cursor: string | null) {
+    const query = {
       where: { accountOwner: userId },
       orderBy: [{ createdAt: sort }, { id: sort }],
       take: limit,
-      ...cursorQuery,
-    });
+      ...(cursor && { cursor: { ...this.getCursorData(cursor) }, skip: 1 }),
+    };
+
+    const movements = await this.dbService.movement.findMany(query);
 
     const total = movements.length;
 
@@ -209,7 +209,17 @@ export class WalletService {
           )
         : null;
 
-    return { movements: movementsArray, total, nextCursor };
+    // Check if there's a next page by trying to fetch one more record with the next cursor
+    const nextExists = nextCursor
+      ? await this.dbService.movement.count({
+          ...query,
+          cursor: { ...this.getCursorData(nextCursor) },
+          skip: 1,
+          take: 1,
+        })
+      : 0;
+
+    return { movements: movementsArray, total, nextCursor: nextExists ? nextCursor : null };
   }
 
   async swap(userId: string, fromCurrency: string, toCurrency: string, amount: number) {
