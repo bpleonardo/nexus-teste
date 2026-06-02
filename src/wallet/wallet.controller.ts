@@ -2,6 +2,7 @@ import type { Request } from 'express';
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   HttpCode,
   HttpStatus,
@@ -14,6 +15,8 @@ import {
 
 import { Public } from '@/utils';
 import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
+import { AllowedValuesPipe } from '@/pipes/allowed-values.pipe';
+import { ParseIntPipe } from '@/pipes/parse-int.pipe';
 
 import { WalletService } from './wallet.service';
 import { type WithdrawDTO, withdrawSchema } from './dtos/withdraw.dto';
@@ -39,9 +42,10 @@ export class WalletController {
   @Get('movements')
   async getMovements(
     @Req() req: Request,
-    @Query('cursor') cursor?: string,
-    @Query('limit') limit: number = 10,
-    @Query('sort') sort: 'asc' | 'desc' = 'desc',
+    @Query('cursor') cursor: string,
+    @Query('limit', new DefaultValuePipe(10), new ParseIntPipe()) limit: number,
+    @Query('sort', new DefaultValuePipe('asc'), new AllowedValuesPipe(['asc', 'desc']))
+    sort: 'asc' | 'desc',
   ) {
     const user = req['user'];
 
