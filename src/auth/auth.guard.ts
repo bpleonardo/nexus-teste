@@ -1,7 +1,3 @@
-import { Request } from 'express';
-import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
-import type { RedisClientType } from 'redis';
 import {
   CanActivate,
   ExecutionContext,
@@ -9,6 +5,10 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
+import type { RedisClientType } from 'redis';
 
 import { Errors, IS_PUBLIC_KEY, REDIS_CLIENT } from '@/constants';
 
@@ -16,8 +16,8 @@ import { Errors, IS_PUBLIC_KEY, REDIS_CLIENT } from '@/constants';
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
     private readonly jwtService: JwtService,
+    @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

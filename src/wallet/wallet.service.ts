@@ -6,9 +6,9 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
 
+import type { Transaction } from '@/utils';
 import { Errors, REDIS_CLIENT } from '@/constants';
 import { CurrencyType, MovementType } from '@prisma/enums';
-import type { Transaction } from '@/utils';
 
 @Injectable()
 export class WalletService {

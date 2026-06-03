@@ -4,7 +4,7 @@ import { zodCpfValidator } from '@/utils';
 
 export const registerSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters long'),
-  email: z.email('Invalid email address'),
+  email: z.email(),
   password: z.string().min(8, 'Password must be at least 8 characters long'),
   cpf: z.string().refine(zodCpfValidator, { error: 'Invalid CPF number' }),
   phone: z.e164('Invalid phone number'),

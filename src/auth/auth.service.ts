@@ -14,10 +14,10 @@ import type { RegisterDTO } from './dtos/register.dto';
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly jwtService: JwtService,
     private readonly dbService: DatabaseService,
     private readonly configService: ConfigService,
     @Inject(REDIS_CLIENT) private readonly redisClient: RedisClientType,
-    private readonly jwtService: JwtService,
   ) {}
 
   private async hashPassword(password: string): Promise<string> {
@@ -25,6 +25,10 @@ export class AuthService {
   }
 
   async register(dto: RegisterDTO) {
+    // We hash the password as early as possible to avoid leaking.
+    const hashedPassword = await this.hashPassword(dto.password);
+    dto.password = '';
+
     try {
       await this.dbService.$transaction(async (tx) => {
         let user = await tx.user.create({
@@ -41,7 +45,7 @@ export class AuthService {
         await tx.userCredentials.create({
           data: {
             email: user.email,
-            password: await this.hashPassword(dto.password),
+            password: hashedPassword,
           },
         });
 
@@ -71,6 +75,8 @@ export class AuthService {
   }
 
   async login(dto: LoginDTO) {
+    // We use the same error message for all cases to avoid leaking information about
+    // exisiting users.
     const exception = new UnauthorizedException({
       status: 401,
       message: 'Invalid email or password.',

@@ -24,7 +24,10 @@ export class ParseIntPipe implements PipeTransform {
 
   private isNumeric(value: any): boolean {
     return (
-      ['string', 'number'].includes(typeof value) && /^-?\d+$/.test(value) && isFinite(value as any)
+      !isNil(value) &&
+      ['string', 'number'].includes(typeof value) &&
+      /^-?\d+$/.test(value) &&
+      isFinite(value as any)
     );
   }
 }

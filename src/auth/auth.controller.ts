@@ -1,4 +1,5 @@
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UsePipes } from '@nestjs/common';
 
@@ -14,18 +15,19 @@ export class AuthController {
   private readonly httpPath: string;
 
   constructor(
-    reflector: Reflector,
     private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+    reflector: Reflector,
   ) {
     this.httpPath = reflector.get<string>('path', AuthController);
   }
 
   private setRefreshTokenCookie(res: Response, refreshToken: string) {
     res.cookie('refreshToken', refreshToken, {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // TODO: This should come from config.
+      maxAge: this.configService.get<number>('jwt.refreshTokenExpiration'),
       httpOnly: true,
       path: `/${this.httpPath}/refresh`,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
     });
   }
 

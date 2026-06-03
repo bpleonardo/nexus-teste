@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const withdrawSchema = z.object({
-  currency: z.string().min(3).max(3),
+  currency: z.string().length(3),
   amount: z.number().positive(),
 });
 

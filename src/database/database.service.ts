@@ -7,14 +7,12 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class DatabaseService extends PrismaClient {
-  constructor(readonly configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     const adapter = new PrismaPg({
       connectionString: configService.get<string>('database.url'),
       password: configService.get<string>('database.password'),
     });
     super({ adapter });
-
-    this.configService = configService;
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_NOON)
