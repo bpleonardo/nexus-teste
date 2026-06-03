@@ -21,6 +21,7 @@ import { AllowedValuesPipe } from '@/pipes/allowed-values.pipe';
 import { WalletService } from './wallet.service';
 import { type SwapDTO, swapSchema } from './dtos/swap.dto';
 import { type WithdrawDTO, withdrawSchema } from './dtos/withdraw.dto';
+import { ParseFloatPipe } from '@/pipes/parse-float';
 
 @Controller('wallet')
 export class WalletController {
@@ -28,11 +29,10 @@ export class WalletController {
 
   @Get('quote/:from/:to')
   @Public()
-  // TODO: Add parse-flaat
   async getQuote(
     @Param('from') from: string,
     @Param('to') to: string,
-    @Query('amount') amount: number,
+    @Query('amount', new ParseFloatPipe()) amount: number,
   ) {
     return { success: true, data: { ...(await this.walletService.getQuote(from, to, amount)) } };
   }
