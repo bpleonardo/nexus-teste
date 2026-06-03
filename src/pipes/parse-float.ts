@@ -26,7 +26,7 @@ export class ParseFloatPipe implements PipeTransform {
     return (
       !isNil(value) &&
       ['string', 'number'].includes(typeof value) &&
-      /^-?\d+(\.\d)*$/.test(value) &&
+      /^-?\d+(\.\d+)*$/.test(value) &&
       isFinite(value as any)
     );
   }

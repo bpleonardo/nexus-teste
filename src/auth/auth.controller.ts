@@ -1,7 +1,18 @@
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UsePipes } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  HttpCode,
+  HttpStatus,
+  ParseBoolPipe,
+  Post,
+  Req,
+  Res,
+  UsePipes,
+} from '@nestjs/common';
 
 import { Public } from '@/utils';
 import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
@@ -67,7 +78,10 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Req() req: Request, @Body('allDevices') allDevices: boolean) {
+  async logout(
+    @Req() req: Request,
+    @Body('allDevices', new DefaultValuePipe(false), ParseBoolPipe) allDevices: boolean,
+  ) {
     const accessToken = req['user'];
 
     await this.authService.logout(accessToken, allDevices);
