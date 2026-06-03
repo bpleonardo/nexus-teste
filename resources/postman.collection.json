@@ -1,0 +1,418 @@
+{
+  "info": {
+    "_postman_id": "e382e9f9-9a89-4632-a4ce-fd83dbb13cc0",
+    "name": "Nexus API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55352507",
+    "_collection_link": "https://go.postman.co/collection/55352507-e382e9f9-9a89-4632-a4ce-fd83dbb13cc0?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Lucas do Amaral\",\r\n    \"email\": \"teste@gmail.com\",\r\n    \"password\": \"12345678\",\r\n    \"cpf\": \"34487552060\",\r\n    \"phone\": \"+5531324596843\",\r\n    \"address\": {\r\n        \"address\": \"Rua dos Bagres, 927\",\r\n        \"city\": \"Cidade dos Peixes\",\r\n        \"state\": \"São Paulo\",\r\n        \"country\": \"BR\",\r\n        \"postalCode\": \"293948\"\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/register",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "if (jsonData.data.token) {\r",
+                  "    pm.environment.set('access_token', jsonData.data.token)\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"teste@gmail.com\",\r\n    \"password\": \"12345678\",\r\n    \"persistent\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "if (jsonData.data.token) {\r",
+                  "    pm.environment.set('access_token', jsonData.data.token)\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/auth/refresh",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "refresh"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/auth/logout",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/auth/me",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "wallet",
+      "item": [
+        {
+          "name": "quote",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/wallet/quote/:from/:to?amount=0.001",
+              "host": ["{{BASE_URL}}"],
+              "path": ["wallet", "quote", ":from", ":to"],
+              "query": [
+                {
+                  "key": "amount",
+                  "value": "0.001"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "from",
+                  "value": "btc"
+                },
+                {
+                  "key": "to",
+                  "value": "brl"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "balance",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/wallet/balance",
+              "host": ["{{BASE_URL}}"],
+              "path": ["wallet", "balance"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "withdraw",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"currency\": \"BRL\",\r\n    \"amount\": 50\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/wallet/withdraw",
+              "host": ["{{BASE_URL}}"],
+              "path": ["wallet", "withdraw"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "movements",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/wallet/movements?cursor=MTc4MDQzNTE5ODAzMDo5YjkxYjBiNy1lNTVlLTQ2ZDgtYWMzZS05OWFkNTQ0NWMxNDg=&limit=2",
+              "host": ["{{BASE_URL}}"],
+              "path": ["wallet", "movements"],
+              "query": [
+                {
+                  "key": "cursor",
+                  "value": "MTc4MDQzNTE5ODAzMDo5YjkxYjBiNy1lNTVlLTQ2ZDgtYWMzZS05OWFkNTQ0NWMxNDg="
+                },
+                {
+                  "key": "limit",
+                  "value": "2"
+                },
+                {
+                  "key": "sort",
+                  "value": "as",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "transactions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/wallet/transactions?cursor=MTc4MDQzNTI0NzM1NDoxMGM4MjYzZi0wMzg4LTQ5MzctYTI0Ny0wNDY1MzI1ZGU4M2Y=&limit=1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["wallet", "transactions"],
+              "query": [
+                {
+                  "key": "cursor",
+                  "value": "MTc4MDQzNTI0NzM1NDoxMGM4MjYzZi0wMzg4LTQ5MzctYTI0Ny0wNDY1MzI1ZGU4M2Y="
+                },
+                {
+                  "key": "limit",
+                  "value": "1"
+                },
+                {
+                  "key": "sort",
+                  "value": "as",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "swap",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"fromCurrency\": \"BTC\",\r\n    \"toCurrency\": \"BRL\",\r\n    \"amount\": 0.0002\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/wallet/swap",
+              "host": ["{{BASE_URL}}"],
+              "path": ["wallet", "swap"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "webhooks",
+      "item": [
+        {
+          "name": "deposit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userId\": \"9756451a-13a3-4228-85ca-dc6333518b23\",\r\n    \"token\": \"ETH\",\r\n    \"amount\": 0.23,\r\n    \"idempotencyKey\": \"random2\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/webhooks/deposit",
+              "host": ["{{BASE_URL}}"],
+              "path": ["webhooks", "deposit"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": ""
+    }
+  ]
+}

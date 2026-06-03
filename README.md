@@ -9,6 +9,7 @@ Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como p
 ## Funcionalidades Implementadas
 
 ### 1. **Autenticação**
+
 - [x] Cadastro de usuário (email + senha com hash via argon2)
 - [x] Login com geração de JWT (access token + refresh token)
 - [x] Rotas protegidas por middleware de autenticação
@@ -16,17 +17,20 @@ Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como p
 - [x] Controle de sessões
 
 ### 2. **Carteira e Saldos**
+
 - [x] Criação automática de carteira ao cadastro com saldo zero
 - [x] Suporte para 3 tokens: **BRL**, **BTC**, **ETH**
 - [x] Saldos armazenados no banco com modelo de ledger virtual
 - [x] Endpoint para consultar saldos da carteira
 
 ### 3. **Depósito via Webhook**
+
 - [x] Endpoint `POST /webhooks/deposit` para simular depósitos externos
 - [x] Payload: `{ userId, token, amount, idempotencyKey }`
 - [x] Validação de `idempotencyKey` para evitar depósitos duplicados
 
 ### 4. **Swap - Conversão entre Tokens**
+
 - [x] Endpoint de cotação: simula conversão entre tokens
   - Integração com API pública (CoinGecko)
   - Taxa fixa de 1,5% sobre o valor
@@ -39,12 +43,14 @@ Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como p
 - [x] Cache de cotações com Redis (reduz chamadas à API externa)
 
 ### 5. **Saque**
+
 - [x] Endpoint para solicitar saque de um token
 - [x] Validação de saldo suficiente
 - [x] Débito do saldo (transferência é mock)
 - [x] Registro de transação de saque
 
 ### 6. **Ledger de Movimentações**
+
 - [x] Todo débito/crédito gera registro de movimentação
 - [x] Tipos de movimentação: `DEPOSIT`, `SWAP_IN`, `SWAP_OUT`, `SWAP_FEE`, `WITHDRAW`
 - [x] Rastreamento: tipo, token, valor, saldo anterior, saldo novo, data/hora
@@ -52,11 +58,13 @@ Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como p
 - [x] Endpoint de extrato com paginação
 
 ### 7. **Histórico de Transações**
+
 - [x] Endpoint para listar transações do usuário
 - [x] Registro detalhado: tipo, tokens envolvidos, valores, taxa, data/hora
 - [x] Suporte a paginação
 
 ### 8. **Diferenciais Implementados**
+
 - [x] **Redis para cache** de cotações (evita chamadas repetidas à CoinGecko) e operações (evita estresse no banco)
 - [x] **Docker e Docker Compose** para ambiente containerizado
 - [x] **Estrutura modular** com separação clara de responsabilidades
@@ -66,11 +74,13 @@ Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como p
 ## Stack Técnico
 
 ### Obrigatório
+
 - **Node.js** com **TypeScript**
 - **PostgreSQL** com **Prisma** (ORM)
 - **Git**
 
 ### Escolhido
+
 - **NestJS** - Framework robustos para estrutura modular e escalável
 - **Zod** - Validação de dados em tempo de compilação
 - **Redis** - Cache distribuído para cotações
@@ -78,6 +88,7 @@ Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como p
 - **Argon2** - Hash seguro de senhas
 
 ### Ferramentas de Desenvolvimento
+
 - **ESLint** - Linting de código
 - **Prettier** - Formatação de código
 - **Docker** - Deploy do Postgres e Redis
@@ -110,7 +121,7 @@ src/
 │  ├─ <mesma estrutura>
 ├─ webhooks/                    # Módulo webhooks/
 │  ├─ <mesma estrutura>
-├─ database/                  
+├─ database/
 │  ├─ database.module.ts        # Módulo de database para importação
 │  ├─ database.service.ts       # Definição da classe DatabaseService
 ├─ redis/
@@ -138,11 +149,13 @@ src/
 ![Diagrama](https://raw.githubusercontent.com/bpleonardo/nexus-teste/refs/heads/main/resources/db-schema.png)
 
 > Gerado com https://dbdiagram.io/
+
 ---
 
-##  Como Executar Localmente
+## Como Executar Localmente
 
 ### Pré-requisitos
+
 - Node.js >= 20.x
 - Yarn ou npm
 - Docker e Docker Compose (opcional, mas recomendado)
@@ -152,17 +165,20 @@ src/
 ### Instalação com Docker (Recomendado)
 
 1. **Clone o repositório:**
+
 ```bash
 git clone https://github.com/bpleonardo/nexus-teste
 cd nexus-teste
 ```
 
 2. **Configure as variáveis de ambiente:**
+
 ```bash
 cp .env.example .env
 ```
 
 Preencha o arquivo `.env` com suas credenciais:
+
 ```env
 # Banco de dados PostgreSQL
 DB_URL=postgresql://postgres:<SUA_SENHA_AQUI>@postgres:5432/public
@@ -179,6 +195,7 @@ JWT_SECRET=sua_chave_super_secreta_aqui
 ```
 
 3. **Inicie os containers:**
+
 ```bash
 docker-compose up
 ```
@@ -188,12 +205,14 @@ docker-compose up
 ### Instalação Local (Sem Docker)
 
 1. **Clone e entre no diretório:**
+
 ```bash
 git clone https://github.com/bpleonardo/nexus-teste.git
 cd nexus-teste
 ```
 
 2. **Instale as dependências:**
+
 ```bash
 yarn install
 ```
@@ -203,17 +222,20 @@ yarn install
    - Redis: `redis://localhost:6379`
 
 4. **Configure variáveis de ambiente:**
+
 ```bash
 cp .env.example .env
 # Edite .env com suas credenciais
 ```
 
 5. **Execute as migrações:**
+
 ```bash
 yarn prisma migrate deploy
 ```
 
 6. **Inicie o servidor:**
+
 ```bash
 yarn start
 ```
@@ -222,7 +244,10 @@ yarn start
 
 ## Endpoints Principais
 
+> Para testar a API, recomendo usar o Postman. Você pode importar a coleção de endpoints disponível em `resources/postman.collection.json`.
+
 ### Autenticação
+
 - `POST /auth/register` - Registrar novo usuário
 - `POST /auth/login` - Login e obter tokens
 - `POST /auth/refresh` - Renovar access token
@@ -230,7 +255,8 @@ yarn start
 - `GET /auth/me` - Informações do usuário logado
 
 ### Carteira
-- `GET /wallet/quote/:from` - Obter cotação de conversão. 
+
+- `GET /wallet/quote/:from` - Obter cotação de conversão.
 - `GET /wallet/balance` - Obter saldo do usuário
 - `GET /wallet/movements` - Obter movimentações individuais do usuário
 - `GET /wallet/transactions` - Obter transações individuais do usuário
@@ -238,6 +264,7 @@ yarn start
 - `POST /wallet/swap` - Realizar a troca entre dois tokens
 
 ### Webhooks
+
 - `POST /webhooks/deposit` - Receber depósito externo (com validação de idempotencyKey)
 
 ---
@@ -248,37 +275,43 @@ yarn start
 2. **Autenticação:** JWT com access token de curta-vida e refresh token de longa-vida
 3. **Refresh Token:** Armazenado em banco com possível revocação
 4. **Validação:** Zod para tipagem e validação de entrada
-6. **Idempotência:** Webhooks protegidos contra duplicação
+5. **Idempotência:** Webhooks protegidos contra duplicação
 
 ---
 
 ## Decisões Técnicas
 
 ### Por que NestJS?
+
 - Estrutura modular nativa com decoradores
 - Injeção de dependência integrada
 - Documentação excelente
 - Similaridade com ASP.NET do C#
 
 ### Por que Prisma?
+
 - ORM focada em Typescript
 - Migrações automáticas
 - Queries integradas com o editor (typescript)
 
 ### Por que Redis?
+
 - Reduz latência e carga na API externa e banco de dados
 - Suporte a TTL para expiração automática
-  
+
 ### Por que Zod?
+
 - Validação de schemas em tempo de runtime
 - Parsing automático com inferência de tipos TypeScript
 - Mensagens de erros descritivas
 - Ótimo para utilização com DTOs
 
 ### Modelo de Resposta Consistente
+
 Todas as respostas seguem um padrão:
 
 **Sucesso:**
+
 ```json
 {
   "success": true,
@@ -287,6 +320,7 @@ Todas as respostas seguem um padrão:
 ```
 
 **Erro:**
+
 ```json
 {
   "success": false,
@@ -296,10 +330,10 @@ Todas as respostas seguem um padrão:
 ```
 
 ### Por que Ledger de Movimentações?
+
 - Auditoria completa de todos os movimentos
 - Saldo sempre pode ser recalculado
-- 
----
+- ***
 
 ## Checklist de Requisitos
 
