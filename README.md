@@ -1,98 +1,330 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Nexus - Carteira Cripto Simplificada
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Descrição
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como parte de um teste prático de desenvolvimento backend. A aplicação permite que usuários se cadastrem, gerenciem suas carteiras e realizem trocas entre tokens e saques, com um sistema completo de auditoria através de um ledger de movimentações.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Funcionalidades Implementadas
 
-## Project setup
+### 1. **Autenticação**
+- [x] Cadastro de usuário (email + senha com hash via argon2)
+- [x] Login com geração de JWT (access token + refresh token)
+- [x] Rotas protegidas por middleware de autenticação
+- [x] Revogação de refresh tokens e access tokens
+- [x] Controle de sessões
 
-```bash
-$ yarn install
+### 2. **Carteira e Saldos**
+- [x] Criação automática de carteira ao cadastro com saldo zero
+- [x] Suporte para 3 tokens: **BRL**, **BTC**, **ETH**
+- [x] Saldos armazenados no banco com modelo de ledger virtual
+- [x] Endpoint para consultar saldos da carteira
+
+### 3. **Depósito via Webhook**
+- [x] Endpoint `POST /webhooks/deposit` para simular depósitos externos
+- [x] Payload: `{ userId, token, amount, idempotencyKey }`
+- [x] Validação de `idempotencyKey` para evitar depósitos duplicados
+
+### 4. **Swap - Conversão entre Tokens**
+- [x] Endpoint de cotação: simula conversão entre tokens
+  - Integração com API pública (CoinGecko)
+  - Taxa fixa de 1,5% sobre o valor
+  - Retorna: quantidade de destino, taxa cobrada, cotação usada
+- [x] Endpoint de execução do swap
+  - Validação de saldo suficiente (incluindo taxa)
+  - Débito do token de origem + taxa
+  - Crédito do token de destino
+  - Registro de transação completo
+- [x] Cache de cotações com Redis (reduz chamadas à API externa)
+
+### 5. **Saque**
+- [x] Endpoint para solicitar saque de um token
+- [x] Validação de saldo suficiente
+- [x] Débito do saldo (transferência é mock)
+- [x] Registro de transação de saque
+
+### 6. **Ledger de Movimentações**
+- [x] Todo débito/crédito gera registro de movimentação
+- [x] Tipos de movimentação: `DEPOSIT`, `SWAP_IN`, `SWAP_OUT`, `SWAP_FEE`, `WITHDRAW`
+- [x] Rastreamento: tipo, token, valor, saldo anterior, saldo novo, data/hora
+- [x] Auditabilidade: saldo pode ser reconstruído a partir das movimentações
+- [x] Endpoint de extrato com paginação
+
+### 7. **Histórico de Transações**
+- [x] Endpoint para listar transações do usuário
+- [x] Registro detalhado: tipo, tokens envolvidos, valores, taxa, data/hora
+- [x] Suporte a paginação
+
+### 8. **Diferenciais Implementados**
+- [x] **Redis para cache** de cotações (evita chamadas repetidas à CoinGecko) e operações (evita estresse no banco)
+- [x] **Docker e Docker Compose** para ambiente containerizado
+- [x] **Estrutura modular** com separação clara de responsabilidades
+
+---
+
+## Stack Técnico
+
+### Obrigatório
+- **Node.js** com **TypeScript**
+- **PostgreSQL** com **Prisma** (ORM)
+- **Git**
+
+### Escolhido
+- **NestJS** - Framework robustos para estrutura modular e escalável
+- **Zod** - Validação de dados em tempo de compilação
+- **Redis** - Cache distribuído para cotações
+- **JWT** - Autenticação stateless
+- **Argon2** - Hash seguro de senhas
+
+### Ferramentas de Desenvolvimento
+- **ESLint** - Linting de código
+- **Prettier** - Formatação de código
+- **Docker** - Deploy do Postgres e Redis
+
+---
+
+## Arquitetura e Estrutura do Projeto
+
+### Organização do Código
+
+```
+src/
+├─ main.ts                      # Entrypoint do servidor
+├─ config.ts                    # Definições de configurações
+├─ constants.ts                 # Constantes não configuráveis
+├─ utils.ts                     # Funções e tipos utilitários
+├─ app.module.ts                # Módulo raiz
+├─ pipes/
+│  ├─ allowed-values.pipe.ts    # Pipe para limitar valores
+│  ├─ parse-float.pipe.ts       # Pipe para converter string -> float
+│  ├─ parse-int.pipe.ts         # Pipe para converter string -> int
+│  ├─ zod-validation.pipe.ts    # Pipe para validar um esquema zod
+├─ auth/                        # Módulo auth/
+│  ├─ dtos/                     # Definições de esquemas zod e tipos
+│  ├─ auth.module.ts            # Módulo
+│  ├─ auth.controller.ts        # Controller do módulo
+│  ├─ auth.service.ts           # Service do módulo
+│  ├─ auth.guard.ts             # Guard global para validar a autenticação
+├─ wallet/                      # Módulo wallet/
+│  ├─ <mesma estrutura>
+├─ webhooks/                    # Módulo webhooks/
+│  ├─ <mesma estrutura>
+├─ database/                  
+│  ├─ database.module.ts        # Módulo de database para importação
+│  ├─ database.service.ts       # Definição da classe DatabaseService
+├─ redis/
+│  ├─ redis.module.ts           # Módulo redis para importação
+│  ├─ redis.ts                  # Definição do provider REDIS_CLIENT
+
 ```
 
-## Compile and run the project
+> Gerado com https://ascii-tree-generator.com/
 
+### Módulos Principais
+
+1. **AuthModule** - Gerencia autenticação, registro e login
+2. **WalletModule** - Gerencia carteiras, saldos, swaps e saques
+3. **WebhooksModule** - Recebe depósitos externos
+4. **DatabaseModule** - Integração com Prisma e PostgreSQL
+5. **RedisModule** - Gerencia cache distribuído
+
+---
+
+## Modelagem do Banco de Dados
+
+### Diagrama
+
+![Diagrama](https://raw.githubusercontent.com/bpleonardo/nexus-teste/refs/heads/main/resources/db-schema.png)
+
+> Gerado com https://dbdiagram.io/
+---
+
+##  Como Executar Localmente
+
+### Pré-requisitos
+- Node.js >= 20.x
+- Yarn ou npm
+- Docker e Docker Compose (opcional, mas recomendado)
+- PostgreSQL (se não usar Docker)
+- Redis (se não usar Docker)
+
+### Instalação com Docker (Recomendado)
+
+1. **Clone o repositório:**
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+git clone https://github.com/bpleonardo/nexus-teste
+cd nexus-teste
 ```
 
-## Run tests
-
+2. **Configure as variáveis de ambiente:**
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+Preencha o arquivo `.env` com suas credenciais:
+```env
+# Banco de dados PostgreSQL
+DB_URL=postgresql://postgres:<SUA_SENHA_AQUI>@postgres:5432/public
+DB_USERNAME=postgres
+DB_PASSWORD=<SUA_SENHA_AQUI>
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+# Redis (deixe vazio se não usar autenticação)
+REDIS_URL=redis://redis:6379
+REDIS_USERNAME=
+REDIS_PASSWORD=
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+# JWT
+JWT_SECRET=sua_chave_super_secreta_aqui
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+3. **Inicie os containers:**
+```bash
+docker-compose up
+```
 
-## Resources
+4. **A API estará disponível em `http://localhost/api`**
 
-Check out a few resources that may come in handy when working with NestJS:
+### Instalação Local (Sem Docker)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+1. **Clone e entre no diretório:**
+```bash
+git clone https://github.com/bpleonardo/nexus-teste.git
+cd nexus-teste
+```
 
-## Support
+2. **Instale as dependências:**
+```bash
+yarn install
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+3. **Configure o banco de dados e Redis:**
+   - PostgreSQL: `postgresql://user:password@localhost:5432/public`
+   - Redis: `redis://localhost:6379`
 
-## Stay in touch
+4. **Configure variáveis de ambiente:**
+```bash
+cp .env.example .env
+# Edite .env com suas credenciais
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+5. **Execute as migrações:**
+```bash
+yarn prisma migrate deploy
+```
 
-## License
+6. **Inicie o servidor:**
+```bash
+yarn start
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+7. **A API estará em `http://localhost:3000`**
+
+## Endpoints Principais
+
+### Autenticação
+- `POST /auth/register` - Registrar novo usuário
+- `POST /auth/login` - Login e obter tokens
+- `POST /auth/refresh` - Renovar access token
+- `POST /auth/logout` - Invalidar sessão (todas ou somente a atual)
+- `GET /auth/me` - Informações do usuário logado
+
+### Carteira
+- `GET /wallet/quote/:from` - Obter cotação de conversão. 
+- `GET /wallet/balance` - Obter saldo do usuário
+- `GET /wallet/movements` - Obter movimentações individuais do usuário
+- `GET /wallet/transactions` - Obter transações individuais do usuário
+- `POST /wallet/withdraw` - Realizar o saque de um token
+- `POST /wallet/swap` - Realizar a troca entre dois tokens
+
+### Webhooks
+- `POST /webhooks/deposit` - Receber depósito externo (com validação de idempotencyKey)
+
+---
+
+## Decisões de Segurança
+
+1. **Senha:** Hash com Argon2 (resistente a ataques de força bruta)
+2. **Autenticação:** JWT com access token de curta-vida e refresh token de longa-vida
+3. **Refresh Token:** Armazenado em banco com possível revocação
+4. **Validação:** Zod para tipagem e validação de entrada
+6. **Idempotência:** Webhooks protegidos contra duplicação
+
+---
+
+## Decisões Técnicas
+
+### Por que NestJS?
+- Estrutura modular nativa com decoradores
+- Injeção de dependência integrada
+- Documentação excelente
+- Similaridade com ASP.NET do C#
+
+### Por que Prisma?
+- ORM focada em Typescript
+- Migrações automáticas
+- Queries integradas com o editor (typescript)
+
+### Por que Redis?
+- Reduz latência e carga na API externa e banco de dados
+- Suporte a TTL para expiração automática
+  
+### Por que Zod?
+- Validação de schemas em tempo de runtime
+- Parsing automático com inferência de tipos TypeScript
+- Mensagens de erros descritivas
+- Ótimo para utilização com DTOs
+
+### Modelo de Resposta Consistente
+Todas as respostas seguem um padrão:
+
+**Sucesso:**
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+**Erro:**
+```json
+{
+  "success": false,
+  "message": "Descrição do erro",
+  "data": { ... }
+}
+```
+
+### Por que Ledger de Movimentações?
+- Auditoria completa de todos os movimentos
+- Saldo sempre pode ser recalculado
+- 
+---
+
+## Checklist de Requisitos
+
+- [x] Autenticação (registro, login, JWT, refresh token)
+- [x] Carteira com 3 tokens (BRL, BTC, ETH)
+- [x] Depósito via webhook com idempotencyKey
+- [x] Swap com cotação real e taxa 1,5%
+- [x] Saque com validação de saldo
+- [x] Ledger de movimentações completo
+- [x] Histórico de transações com paginação
+- [x] README com decisões técnicas
+- [x] Redis para cache de cotações
+- [x] TypeScript com tipagem forte
+- [x] Validação com Zod
+- [x] Tratamento de erros e casos de borda
+- [x] Auditoria via ledger
+
+---
+
+## Tratamento de Casos de Borda
+
+1. **Depósito duplicado:** Validado via `idempotencyKey`
+2. **Saldo insuficiente:** Erro antes de debitar
+3. **Usuário/token não existente:** Erro apropriado
+4. **Precisão de valores:** Decimal(20,8) para moedas cripto
+5. **Race conditions:** Transações atômicas no banco
+6. **Token expirado:** Refresh automático via refresh token
+7. **Taxa de câmbio desatualizada:** Cache com TTL curto
