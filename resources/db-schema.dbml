@@ -1,0 +1,83 @@
+Enum MovementType {
+  DEPOSIT
+  SWAP_IN
+  SWAP_OUT
+  SWAP_FEE
+  WITHDRAW
+}
+
+Enum CurrencyType {
+  BRL
+  BTC
+  ETH
+}
+
+Table User {
+  id uuid [pk, note: 'Generated UUID']
+  name varchar [not null]
+  email varchar [not null, unique]
+  cpf varchar [not null, unique]
+  phone varchar [not null, unique]
+}
+
+Table UserAddress {
+  userId uuid [pk, not null]
+  address varchar [not null]
+  city varchar [not null]
+  state varchar [not null]
+  country varchar [not null]
+  postalCode varchar [not null]
+
+  indexes {
+    userId [pk]
+  }
+}
+
+Table UserCredentials {
+  email varchar [pk, not null]
+  password varchar [not null]
+
+  indexes {
+    email [pk]
+  }
+}
+
+Table RefreshToken {
+  id uuid [pk]
+  userId uuid [not null]
+  issuedAt timestamptz [not null]
+  revokedAt timestamptz
+  jti uuid [not null, unique]
+
+  indexes {
+    userId
+    jti [unique]
+    (userId, revokedAt)
+  }
+}
+
+Table Movement {
+  id uuid [pk]
+  transactionId uuid [not null]
+  accountOwner uuid [not null]
+  type MovementType [not null]
+  currency CurrencyType [not null]
+  amount decimal(20,8) [not null]
+  createdAt timestamptz [not null]
+
+  indexes {
+    accountOwner
+    transactionId
+    createdAt
+    (accountOwner, createdAt)
+    (accountOwner, currency)
+  }
+}
+
+Ref: User.id - UserAddress.userId [delete: cascade]
+
+Ref: User.email - UserCredentials.email [delete: cascade]
+
+Ref: RefreshToken.userId > User.id
+
+Ref: Movement.accountOwner > User.id
