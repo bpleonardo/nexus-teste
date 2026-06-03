@@ -14,6 +14,7 @@ export default () => {
       url: e.DB_URL,
     },
     redis: {
+      url: e.REDIS_URL || 'redis://localhost:6379',
       username: e.REDIS_USERNAME || 'redis',
       password: e.REDIS_PASSWORD,
     },

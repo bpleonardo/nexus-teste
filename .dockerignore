@@ -1,0 +1,12 @@
+node_modules/
+resources/
+.editorconfig
+.dockerignore
+.env.example
+.gitignore
+.prettierrc
+docker-compose.yml
+Dockerfile
+estlint.config.mjs
+nest-cli.json
+README.md

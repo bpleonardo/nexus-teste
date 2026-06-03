@@ -7,6 +7,7 @@ export const redisProvider = {
   provide: REDIS_CLIENT,
   useFactory: async (configService: ConfigService) => {
     return await createClient({
+      url: configService.get<string>('redis.url'),
       username: configService.get<string>('redis.username'),
       password: configService.get<string>('redis.password'),
     }).connect();
