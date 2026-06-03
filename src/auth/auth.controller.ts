@@ -5,6 +5,7 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Get,
   HttpCode,
   HttpStatus,
   ParseBoolPipe,
@@ -85,5 +86,17 @@ export class AuthController {
     const accessToken = req['user'];
 
     await this.authService.logout(accessToken, allDevices);
+  }
+
+  @Get('me')
+  async me(@Req() req: Request) {
+    const user = req['user'];
+
+    return {
+      success: true,
+      data: {
+        ...(await this.authService.getProfile(user.sub)),
+      },
+    };
   }
 }

@@ -219,4 +219,35 @@ export class AuthService {
       await this.blacklistToken(jti);
     }
   }
+
+  async getProfile(userId: string) {
+    const user = await this.dbService.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'User not found.',
+      });
+    }
+
+    let address = await this.dbService.userAddress.findUnique({
+      where: { userId },
+      omit: { userId: true },
+    });
+
+    if (!address) {
+      // This should never happen, but we want to be sure to not leak the existence of the user.
+      throw new UnauthorizedException({
+        status: 401,
+        message: 'User not found.',
+      });
+    }
+
+    return {
+      ...user,
+      address: address,
+    };
+  }
 }
