@@ -1,6 +1,8 @@
 services:
   backend:
-    build: .
+    build:
+      context: ./backend
+      dockerfile: ./backend/Dockerfile
     env_file:
       - ./.env
     restart: no
