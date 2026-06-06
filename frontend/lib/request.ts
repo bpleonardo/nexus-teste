@@ -20,10 +20,15 @@ interface RequestOptions extends Omit<RequestInit, 'headers'> {
 
 export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
 
+export type ResponseData<T> = {
+  status: number;
+  body: ApiResponse<T> | null;
+};
+
 export async function request<T>(
   url: string,
   options: RequestOptions = { needsAuth: true },
-): Promise<ApiResponse<T>> {
+): Promise<ResponseData<T>> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -33,7 +38,7 @@ export async function request<T>(
     const token = getAccessToken();
 
     if (!token) {
-      window.history.pushState({}, '', '/login');
+      window.location.href = '/login';
     }
 
     headers['Authorization'] = `Bearer ${token}`;
@@ -44,13 +49,18 @@ export async function request<T>(
     headers,
   });
 
-  let data = (await response.json()) as ApiResponse<T>;
+  let data: ApiResponse<T> | null = null;
+
+  if (response.headers.get('Content-Type')?.includes('application/json')) {
+    data = await response.json();
+  }
 
   // Check if token is invalid
   if (
     options.needsAuth &&
+    !response.ok &&
     response.status === 401 &&
-    data.success === false &&
+    data?.success === false &&
     data.code === 'INVALID_TOKEN'
   ) {
     // Try to refresh the token
@@ -64,8 +74,10 @@ export async function request<T>(
       headers,
     });
 
-    data = await response.json();
+    if (response.headers.get('Content-Type')?.includes('application/json')) {
+      data = await response.json();
+    }
   }
 
-  return data;
+  return { status: response.status, body: data };
 }
