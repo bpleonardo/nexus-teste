@@ -6,6 +6,7 @@ export enum Errors {
   INVALID_CURRENCY = 'INVALID_CURRENCY',
   NO_FUNDS = 'NO_FUNDS',
   NOT_FOUND = 'USER_NOT_FOUND',
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
 }
 
 export const IS_PUBLIC_KEY = '_isPublic';

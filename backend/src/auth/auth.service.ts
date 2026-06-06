@@ -78,7 +78,8 @@ export class AuthService {
     // We use the same error message for all cases to avoid leaking information about
     // exisiting users.
     const exception = new UnauthorizedException({
-      status: 401,
+      success: false,
+      code: Errors.INVALID_CREDENTIALS,
       message: 'Invalid email or password.',
     });
 
