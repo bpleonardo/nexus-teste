@@ -50,10 +50,13 @@ export async function getBalance() {
 }
 
 export async function getTransactions(limit: number = 5) {
-  const response = await request<TransactionsResponse>(`/wallet/transactions?limit=${limit}`, {
-    method: 'GET',
-    needsAuth: true,
-  });
+  const response = await request<TransactionsResponse>(
+    `/wallet/transactions?limit=${limit}&sort=desc`,
+    {
+      method: 'GET',
+      needsAuth: true,
+    },
+  );
 
   if (response.body?.success === false) {
     throw new Error(response.body.message);

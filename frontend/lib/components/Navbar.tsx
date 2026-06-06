@@ -1,30 +1,37 @@
+'use client';
+
 import {
-  Button,
+  Avatar,
   Group,
   Menu,
   Text,
   useComputedColorScheme,
   useMantineColorScheme,
 } from '@mantine/core';
-import {
-  CaretDownIcon,
-  MoonIcon,
-  SignOutIcon,
-  SunIcon,
-  UserCircleIcon,
-} from '@phosphor-icons/react';
+import { CaretDownIcon, SignOutIcon } from '@phosphor-icons/react';
 import { logout } from '../api/wallet';
 import { useRouter } from 'next/navigation';
-import { clearAccessToken } from '@/lib/auth';
+import { clearAccessToken, getAccessToken } from '@/lib/auth';
+import { getFirstAndLastName, getInitials } from '../methods';
+import { useEffect, useState } from 'react';
+import { decodeToken } from 'react-jwt';
 
 export default function Navbar() {
   const router = useRouter();
-  const { colorScheme, setColorScheme } = useMantineColorScheme();
-  const computedColorScheme = useComputedColorScheme('light');
+  const [username, setUsername] = useState<string>('Usuário');
 
-  const toggleColorScheme = () => {
-    setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark');
-  };
+  const initials = getInitials(username);
+
+  useEffect(() => {
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      const decodedToken = decodeToken<{ name: string }>(accessToken);
+
+      if (decodedToken) {
+        setUsername(decodedToken.name);
+      }
+    }
+  }, []);
 
   const doLogout = async () => {
     try {
@@ -45,8 +52,10 @@ export default function Navbar() {
         <Menu>
           <Menu.Target>
             <Group gap={8} style={{ cursor: 'pointer' }}>
-              <UserCircleIcon size={32} />
-              <Text>Usuário</Text>
+              <Avatar color="teal" radius="xl">
+                {initials}
+              </Avatar>
+              <Text>{getFirstAndLastName(username)}</Text>
               <CaretDownIcon size={16} />
             </Group>
           </Menu.Target>
@@ -56,9 +65,6 @@ export default function Navbar() {
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
-        <Button variant="transparent" color="gray" onClick={toggleColorScheme}>
-          {computedColorScheme === 'dark' ? <MoonIcon size={20} /> : <SunIcon size={20} />}
-        </Button>
       </Group>
     </Group>
   );
