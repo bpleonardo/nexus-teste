@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Container, Grid, Loader, Center } from '@mantine/core';
+import { Container, SimpleGrid, Stack } from '@mantine/core';
 import { KNOWN_CURRENCIES } from '@/lib/constants';
-import { getBalance, getTransactions, Balance, Transaction } from '@/lib/api/wallet';
 import BalanceModule from '@/lib/components/BalanceModule';
 import Navbar from '@/lib/components/Navbar';
 import { TransactionsModule } from '@/lib/components/TransactionsModule';
@@ -17,15 +15,17 @@ export default function WalletPage() {
     <Container size="xl" py="lg">
       <Navbar />
 
-      <Grid gap="md">
-        <BalanceModule currencyOptions={currencyOptions} />
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" mt="md">
+        <Stack gap="md">
+          <BalanceModule currencyOptions={currencyOptions} />
+          <TransactionsModule />
+        </Stack>
 
-        <SwapModule currencyOptions={currencyOptions} />
-
-        <TransactionsModule />
-
-        <WithdrawModule currencyOptions={currencyOptions} />
-      </Grid>
+        <Stack gap="md">
+          <SwapModule currencyOptions={currencyOptions} />
+          <WithdrawModule currencyOptions={currencyOptions} />
+        </Stack>
+      </SimpleGrid>
     </Container>
   );
 }

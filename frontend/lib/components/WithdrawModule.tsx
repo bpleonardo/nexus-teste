@@ -26,42 +26,42 @@ export default function WithdrawModule({ currencyOptions }: WithdrawModuleProps)
   };
 
   return (
-    <Grid.Col span={{ base: 12, md: 6 }}>
-      <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Text fw={500} size="lg" mb="md">
-          Saque
-        </Text>
+    // <Grid.Col span={{ base: 12, md: 6 }}>
+    <Card shadow="sm" padding="lg" radius="md" withBorder>
+      <Text fw={500} size="lg" mb="md">
+        Saque
+      </Text>
 
-        <Select
-          label="Token"
-          placeholder="Selecionar token"
-          data={currencyOptions}
-          value={token}
-          onChange={setToken}
-          mb="md"
-          searchable
-        />
+      <Select
+        label="Token"
+        placeholder="Selecionar token"
+        data={currencyOptions}
+        value={token}
+        onChange={setToken}
+        mb="md"
+        searchable
+      />
 
-        <TextInput
-          label="Quantia"
-          placeholder="0.00"
-          value={amount}
-          onChange={(e) => setAmount(e.currentTarget.value)}
-          mb="md"
-          type="number"
-          min="0"
-          step="0.00000001"
-        />
+      <TextInput
+        label="Quantia"
+        placeholder="0.00"
+        value={amount}
+        onChange={(e) => setAmount(e.currentTarget.value)}
+        mb="md"
+        type="number"
+        min="0"
+        step="0.00000001"
+      />
 
-        <Button
-          fullWidth
-          onClick={doWithdraw}
-          loading={loading}
-          disabled={!token || !amount || loading}
-        >
-          Sacar
-        </Button>
-      </Card>
-    </Grid.Col>
+      <Button
+        fullWidth
+        onClick={doWithdraw}
+        loading={loading}
+        disabled={!token || !amount || loading}
+      >
+        Sacar
+      </Button>
+    </Card>
+    // </Grid.Col>
   );
 }
