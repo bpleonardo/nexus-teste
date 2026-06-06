@@ -38,7 +38,7 @@ function getStrengthColor(strength: number) {
   }
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
 
   useEffect(() => {

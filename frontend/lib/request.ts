@@ -27,12 +27,13 @@ export type ResponseData<T> = {
 
 export async function request<T>(
   url: string,
-  options: RequestOptions = { needsAuth: true },
+  options: RequestOptions = {},
 ): Promise<ResponseData<T>> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...options.headers,
   };
+  options.needsAuth = options.needsAuth ?? true; // Default to true if not specified
 
   if (options.needsAuth) {
     const token = getAccessToken();
@@ -56,26 +57,26 @@ export async function request<T>(
   }
 
   // Check if token is invalid
-  if (
-    options.needsAuth &&
-    !response.ok &&
-    response.status === 401 &&
-    data?.success === false &&
-    data.code === 'INVALID_TOKEN'
-  ) {
-    // Try to refresh the token
-    const newToken = await refreshAccessToken();
+  if (options.needsAuth && !response.ok && response.status === 401) {
+    if (data?.success === false && data.code === 'INVALID_TOKEN') {
+      // Try to refresh the token
+      const newToken = await refreshAccessToken();
 
-    headers['Authorization'] = `Bearer ${newToken}`;
+      headers['Authorization'] = `Bearer ${newToken}`;
 
-    // Retry the request
-    response = await fetch(`${BASE_API_URL}${url}`, {
-      ...options,
-      headers,
-    });
+      // Retry the request
+      response = await fetch(`${BASE_API_URL}${url}`, {
+        ...options,
+        headers,
+      });
 
-    if (response.headers.get('Content-Type')?.includes('application/json')) {
-      data = await response.json();
+      if (response.headers.get('Content-Type')?.includes('application/json')) {
+        data = await response.json();
+      }
+    } else if (data?.success === false && data.code === 'MISSING_TOKEN') {
+      // If token is missing, redirect to login
+      console.log('Token missing. Redirecting to login.');
+      window.location.href = '/login';
     }
   }
 
