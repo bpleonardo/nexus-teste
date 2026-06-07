@@ -26,10 +26,9 @@ export function TransactionsModule() {
     const loadData = async () => {
       try {
         setTransactions(await getTransactions(5));
+        setModuleLoading(false);
       } catch (error) {
         console.error('Failed to load wallet data:', error);
-      } finally {
-        setModuleLoading(false);
       }
     };
 
