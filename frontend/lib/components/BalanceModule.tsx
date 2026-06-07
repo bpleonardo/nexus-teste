@@ -21,7 +21,7 @@ interface BalanceModuleProps {
 
 export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
   const [moduleLoading, setModuleLoading] = useState(true);
-  const [balanceExpanded, setBalanceExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [balance, setBalance] = useState<Balance | null>(null);
 
   useEffect(() => {
@@ -43,26 +43,31 @@ export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
     <Box pos="relative">
       <LoadingOverlay visible={moduleLoading} zIndex={1000} overlayProps={{ blur: 2 }} />
       <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Group justify="space-between" mb="md">
+        <Group justify="space-between">
           <Text fw={500} size="lg">
             Saldo
           </Text>
-          <ActionIcon variant="subtle" onClick={() => setBalanceExpanded(!balanceExpanded)}>
+          <ActionIcon variant="subtle" onClick={() => setExpanded(!expanded)}>
             <CaretDownIcon
               size={20}
               style={{
-                transform: balanceExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.2s ease',
               }}
             />
           </ActionIcon>
         </Group>
 
-        <Text size="xl" fw={700} mb="md">
+        <Text
+          size="xl"
+          fw={700}
+          mb={expanded ? 'md' : undefined}
+          style={{ transition: 'margin-bottom 0.2s ease' }}
+        >
           {formatCurrency(totalBalance, primaryCurrency)}
         </Text>
 
-        <Collapse expanded={balanceExpanded}>
+        <Collapse expanded={expanded}>
           <Stack gap="xs">
             {currencyOptions.map((opt) => (
               <Group justify="space-between" key={opt.value}>
