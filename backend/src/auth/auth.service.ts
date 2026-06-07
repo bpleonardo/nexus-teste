@@ -67,7 +67,7 @@ export class AuthService {
     const payload = { jti: randomUUID(), sub: userId, name };
     return {
       token: await this.jwtService.signAsync(payload, {
-        expiresIn: this.configService.get('jwt.accessTokenExpiration'),
+        expiresIn: this.configService.get<number>('jwt.accessTokenExpiration')! / 1000,
         notBefore: 0,
       }),
       jti: payload.jti,
@@ -121,7 +121,7 @@ export class AuthService {
 
       const refreshPayload = { jti: refreshInDb.id };
       refreshToken = await this.jwtService.signAsync(refreshPayload, {
-        expiresIn: this.configService.get('jwt.refreshTokenExpiration'),
+        expiresIn: this.configService.get<number>('jwt.refreshTokenExpiration')! / 1000,
         notBefore: 0,
       });
     }
@@ -180,7 +180,7 @@ export class AuthService {
     const refreshPayload = { jti: newRefreshDb.id };
 
     const newRefreshToken = await this.jwtService.signAsync(refreshPayload, {
-      expiresIn: this.configService.get('jwt.refreshTokenExpiration'),
+      expiresIn: this.configService.get<number>('jwt.refreshTokenExpiration')! / 1000,
       notBefore: 0,
     });
 
