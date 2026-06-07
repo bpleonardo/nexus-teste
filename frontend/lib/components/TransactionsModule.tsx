@@ -9,6 +9,7 @@ import {
   Group,
   LoadingOverlay,
   NavLink,
+  Skeleton,
   Stack,
   Text,
 } from '@mantine/core';
@@ -17,9 +18,19 @@ import { formatCurrency } from '../methods';
 import { useEffect, useState } from 'react';
 import { CaretDownIcon } from '@phosphor-icons/react';
 
+const dummyTransaction: Transaction = {
+  date: new Date().toDateString(),
+  type: 'DEPOSIT',
+  originAmount: 0,
+  originToken: 'BRL',
+  tax: 0,
+  destinationToken: null,
+  destinationAmount: null,
+};
+
 export function TransactionsModule() {
   const [moduleLoading, setModuleLoading] = useState(true);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>(Array(5).fill(dummyTransaction));
   const [expanded, setExpanded] = useState<boolean>(true);
 
   useEffect(() => {
@@ -39,7 +50,7 @@ export function TransactionsModule() {
   return (
     // <Grid.Col span={{ base: 12, md: 6 }}>
     <Box pos="relative">
-      <LoadingOverlay visible={moduleLoading} zIndex={1000} overlayProps={{ blur: 2 }} />
+      {/* <LoadingOverlay visible={moduleLoading} zIndex={1000} overlayProps={{ blur: 2 }} /> */}
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Group
           justify="space-between"
@@ -65,6 +76,15 @@ export function TransactionsModule() {
         </Group>
 
         <Collapse expanded={expanded}>
+          {/* {moduleLoading ? (
+            <Stack gap="md">
+              <Skeleton height="7.5ex" />
+              <Skeleton height="7.5ex" />
+              <Skeleton height="7.5ex" />
+              <Skeleton height="7.5ex" />
+              <Skeleton height="7.5ex" />
+            </Stack>
+          ) : ( */}
           <Stack gap="md">
             {transactions.length === 0 ? (
               <Text c="dimmed" ta="center" size="sm">
@@ -72,40 +92,42 @@ export function TransactionsModule() {
               </Text>
             ) : (
               transactions.map((tx, idx) => (
-                <Group
-                  justify="space-between"
-                  key={idx}
-                  p="sm"
-                  bg="gray.0"
-                  style={{ borderRadius: 'var(--mantine-radius-md)' }}
-                >
-                  <div>
-                    <Group gap="xs">
-                      <Badge size="sm" variant="dot">
-                        {tx.type}
-                      </Badge>
-                      <Text size="sm">
-                        {tx.originToken}
-                        {tx.destinationToken ? ` → ${tx.destinationToken}` : ''}
+                <Skeleton key={idx} visible={moduleLoading}>
+                  <Group
+                    justify="space-between"
+                    p="sm"
+                    bg="gray.0"
+                    style={{ borderRadius: 'var(--mantine-radius-md)' }}
+                  >
+                    <div>
+                      <Group gap="xs">
+                        <Badge size="sm" variant="dot">
+                          {tx.type}
+                        </Badge>
+                        <Text size="sm">
+                          {tx.originToken}
+                          {tx.destinationToken ? ` → ${tx.destinationToken}` : ''}
+                        </Text>
+                      </Group>
+                      <Text size="xs" c="dimmed">
+                        {new Date(tx.date).toLocaleDateString('pt-BR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </Text>
-                    </Group>
-                    <Text size="xs" c="dimmed">
-                      {new Date(tx.date).toLocaleDateString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                    </div>
+                    <Text fw={500} size="sm">
+                      {formatCurrency(tx.originAmount, tx.originToken)}
+                      {tx.destinationAmount
+                        ? ` → ${formatCurrency(tx.destinationAmount, tx.destinationToken!)}`
+                        : ''}
                     </Text>
-                  </div>
-                  <Text fw={500} size="sm">
-                    {formatCurrency(tx.originAmount, tx.originToken)}
-                    {tx.destinationAmount
-                      ? ` → ${formatCurrency(tx.destinationAmount, tx.destinationToken!)}`
-                      : ''}
-                  </Text>
-                </Group>
+                  </Group>
+                </Skeleton>
               ))
             )}
           </Stack>
+          {/* )} */}
         </Collapse>
       </Card>
     </Box>

@@ -1,14 +1,4 @@
-import {
-  ActionIcon,
-  Box,
-  Card,
-  Collapse,
-  Grid,
-  Group,
-  LoadingOverlay,
-  Stack,
-  Text,
-} from '@mantine/core';
+import { ActionIcon, Box, Card, Collapse, Group, Skeleton, Stack, Text } from '@mantine/core';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { formatCurrency } from '../methods';
@@ -41,7 +31,6 @@ export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
   return (
     // <Grid.Col span={{ base: 12, md: 6 }}>
     <Box pos="relative">
-      <LoadingOverlay visible={moduleLoading} zIndex={1000} overlayProps={{ blur: 2 }} />
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Group justify="space-between">
           <Text fw={500} size="lg">
@@ -58,23 +47,37 @@ export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
           </ActionIcon>
         </Group>
 
-        <Text
-          size="xl"
-          fw={700}
-          mb={expanded ? 'md' : undefined}
-          style={{ transition: 'margin-bottom 0.2s ease' }}
-        >
-          {formatCurrency(totalBalance, primaryCurrency)}
-        </Text>
+        {moduleLoading ? (
+          <Skeleton
+            mt="0.5ex"
+            height="1.8em"
+            width="9em"
+            mb={expanded ? 'md' : undefined}
+            style={{ transition: 'margin-bottom 0.2s ease' }}
+          />
+        ) : (
+          <Text
+            size="xl"
+            fw={700}
+            mb={expanded ? 'md' : undefined}
+            style={{ transition: 'margin-bottom 0.2s ease' }}
+          >
+            {formatCurrency(totalBalance, primaryCurrency)}
+          </Text>
+        )}
 
         <Collapse expanded={expanded}>
           <Stack gap="xs">
             {currencyOptions.map((opt) => (
               <Group justify="space-between" key={opt.value}>
                 <Text size="sm">{opt.value}</Text>
-                <Text size="sm" fw={500}>
-                  {formatCurrency(balance?.[opt.value] || 0, opt.value)}
-                </Text>
+                {moduleLoading ? (
+                  <Skeleton mt="0.5ex" height="1em" width="5em" />
+                ) : (
+                  <Text size="sm" fw={500}>
+                    {formatCurrency(balance?.[opt.value] || 0, opt.value)}
+                  </Text>
+                )}
               </Group>
             ))}
           </Stack>
