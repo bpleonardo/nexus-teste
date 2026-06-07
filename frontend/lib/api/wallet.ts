@@ -26,10 +26,9 @@ export interface TransactionsResponse {
 }
 
 export interface QuoteResponse {
-  from: string;
-  to: string;
   amount: number;
-  output: number;
+  tax: number;
+  quote: number;
 }
 
 export interface WithdrawRequest {
@@ -68,7 +67,6 @@ export async function getTransactions(limit: number = 5) {
 export async function getQuote(from: string, to: string, amount: number) {
   const response = await request<QuoteResponse>(`/wallet/quote/${from}/${to}?amount=${amount}`, {
     method: 'GET',
-    needsAuth: true,
   });
 
   if (response.body?.success === false) {
