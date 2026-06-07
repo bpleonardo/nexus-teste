@@ -1,6 +1,6 @@
 'use client';
 
-import { Container, SimpleGrid, Stack } from '@mantine/core';
+import { SimpleGrid, Stack } from '@mantine/core';
 import { KNOWN_CURRENCIES } from '@/lib/constants';
 import BalanceModule from '@/lib/components/BalanceModule';
 import Navbar from '@/lib/components/Navbar';
@@ -12,10 +12,10 @@ export default function WalletPage() {
   const currencyOptions = KNOWN_CURRENCIES.map((c) => ({ value: c, label: c }));
 
   return (
-    <Container size="xl" py="lg">
+    <>
       <Navbar />
 
-      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" mt="md">
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" mt="md" p="lg">
         <Stack gap="md">
           <BalanceModule currencyOptions={currencyOptions} />
           <TransactionsModule />
@@ -26,6 +26,6 @@ export default function WalletPage() {
           <WithdrawModule currencyOptions={currencyOptions} />
         </Stack>
       </SimpleGrid>
-    </Container>
+    </>
   );
 }

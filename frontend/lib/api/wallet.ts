@@ -9,7 +9,7 @@ export interface Balance {
   totalInBRL: number;
 }
 
-export interface Transaction {
+export interface TransactionType {
   type: 'DEPOSIT' | 'SWAP' | 'WITHDRAW';
   originToken: string;
   destinationToken: string | null;
@@ -20,7 +20,7 @@ export interface Transaction {
 }
 
 export interface TransactionsResponse {
-  transactions: Transaction[];
+  transactions: TransactionType[];
   total: number;
   nextCursor: string | null;
 }
@@ -62,6 +62,28 @@ export async function getTransactions(limit: number = 5) {
   }
 
   return response.body?.data?.transactions || [];
+}
+
+export async function getPaginatedTransactions(
+  limit: number = 15,
+  cursor?: string | null,
+  sort: string = 'desc',
+) {
+  let url = `/wallet/transactions?limit=${limit}&sort=${sort}`;
+  if (cursor) {
+    url += `&cursor=${cursor}`;
+  }
+
+  const response = await request<TransactionsResponse>(url, {
+    method: 'GET',
+    needsAuth: true,
+  });
+
+  if (response.body?.success === false) {
+    throw new Error(response.body.message);
+  }
+
+  return response.body?.data;
 }
 
 export async function getQuote(from: string, to: string, amount: number) {

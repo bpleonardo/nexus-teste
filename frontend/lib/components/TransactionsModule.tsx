@@ -1,20 +1,11 @@
-import {
-  ActionIcon,
-  Anchor,
-  Badge,
-  Card,
-  Collapse,
-  Group,
-  Skeleton,
-  Stack,
-  Text,
-} from '@mantine/core';
-import { getTransactions, Transaction } from '../api/wallet';
-import { formatCurrency } from '../methods';
+import { ActionIcon, Anchor, Card, Collapse, Group, Skeleton, Stack, Text } from '@mantine/core';
+import { getTransactions, TransactionType } from '../api/wallet';
 import { useEffect, useState } from 'react';
 import { CaretDownIcon } from '@phosphor-icons/react';
+import Transaction from './Transaction';
+import Link from 'next/link';
 
-const dummyTransaction: Transaction = {
+const dummyTransaction: TransactionType = {
   date: new Date().toDateString(),
   type: 'DEPOSIT',
   originAmount: 0,
@@ -26,7 +17,9 @@ const dummyTransaction: Transaction = {
 
 export function TransactionsModule() {
   const [moduleLoading, setModuleLoading] = useState(true);
-  const [transactions, setTransactions] = useState<Transaction[]>(Array(5).fill(dummyTransaction));
+  const [transactions, setTransactions] = useState<TransactionType[]>(
+    Array(5).fill(dummyTransaction),
+  );
   const [expanded, setExpanded] = useState<boolean>(true);
 
   useEffect(() => {
@@ -53,7 +46,7 @@ export function TransactionsModule() {
       >
         <Text fw={500}>Últimas transações</Text>
         <Group>
-          <Anchor href="/transactions" c="dark">
+          <Anchor component={Link} href="/transactions" c="dark">
             Ver todas →
           </Anchor>
           <ActionIcon variant="subtle" onClick={() => setExpanded(!expanded)}>
@@ -76,37 +69,8 @@ export function TransactionsModule() {
             </Text>
           ) : (
             transactions.map((tx, idx) => (
-              <Skeleton key={idx} visible={moduleLoading}>
-                <Group
-                  justify="space-between"
-                  p="sm"
-                  bg="gray.0"
-                  style={{ borderRadius: 'var(--mantine-radius-md)' }}
-                >
-                  <div>
-                    <Group gap="xs">
-                      <Badge size="sm" variant="dot">
-                        {tx.type}
-                      </Badge>
-                      <Text size="sm">
-                        {tx.originToken}
-                        {tx.destinationToken ? ` → ${tx.destinationToken}` : ''}
-                      </Text>
-                    </Group>
-                    <Text size="xs" c="dimmed">
-                      {new Date(tx.date).toLocaleDateString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </Text>
-                  </div>
-                  <Text fw={500} size="sm">
-                    {formatCurrency(tx.originAmount, tx.originToken)}
-                    {tx.destinationAmount
-                      ? ` → ${formatCurrency(tx.destinationAmount, tx.destinationToken!)}`
-                      : ''}
-                  </Text>
-                </Group>
+              <Skeleton key={`${tx.date}-${idx}`} visible={moduleLoading}>
+                <Transaction transaction={tx} />
               </Skeleton>
             ))
           )}
