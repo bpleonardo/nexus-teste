@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { MantineProvider, ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
+import { MantineProvider, mantineHtmlProps } from '@mantine/core';
 import './globals.css';
 
 export const metadata: Metadata = {

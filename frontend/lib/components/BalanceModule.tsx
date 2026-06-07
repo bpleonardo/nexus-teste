@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Card, Collapse, Group, Skeleton, Stack, Text } from '@mantine/core';
+import { ActionIcon, Card, Collapse, Group, Skeleton, Stack, Text } from '@mantine/core';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { formatCurrency } from '../methods';

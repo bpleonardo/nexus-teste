@@ -1,4 +1,4 @@
-import { Button, Card, Grid, Select, Text, TextInput } from '@mantine/core';
+import { Button, Card, Select, Text, TextInput } from '@mantine/core';
 import { useState } from 'react';
 import { withdraw } from '../api/wallet';
 

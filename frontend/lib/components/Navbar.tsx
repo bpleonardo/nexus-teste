@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  Avatar,
-  Group,
-  Menu,
-  Text,
-  useComputedColorScheme,
-  useMantineColorScheme,
-} from '@mantine/core';
+import { Avatar, Group, Menu, Text } from '@mantine/core';
 import { CaretDownIcon, SignOutIcon } from '@phosphor-icons/react';
 import { logout } from '../api/wallet';
 import { useRouter } from 'next/navigation';
