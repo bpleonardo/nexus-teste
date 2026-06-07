@@ -26,7 +26,6 @@ export default function WithdrawModule({ currencyOptions }: WithdrawModuleProps)
   };
 
   return (
-    // <Grid.Col span={{ base: 12, md: 6 }}>
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Text fw={500} size="lg" mb="md">
         Saque
@@ -62,6 +61,5 @@ export default function WithdrawModule({ currencyOptions }: WithdrawModuleProps)
         Sacar
       </Button>
     </Card>
-    // </Grid.Col>
   );
 }

@@ -29,61 +29,57 @@ export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
   const totalBalance = balance?.totalInBRL || 0;
 
   return (
-    // <Grid.Col span={{ base: 12, md: 6 }}>
-    <Box pos="relative">
-      <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Group justify="space-between">
-          <Text fw={500} size="lg">
-            Saldo
-          </Text>
-          <ActionIcon variant="subtle" onClick={() => setExpanded(!expanded)}>
-            <CaretDownIcon
-              size={20}
-              style={{
-                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s ease',
-              }}
-            />
-          </ActionIcon>
-        </Group>
-
-        {moduleLoading ? (
-          <Skeleton
-            mt="0.5ex"
-            height="1.8em"
-            width="9em"
-            mb={expanded ? 'md' : undefined}
-            style={{ transition: 'margin-bottom 0.2s ease' }}
+    <Card shadow="sm" padding="lg" radius="md" withBorder>
+      <Group justify="space-between">
+        <Text fw={500} size="lg">
+          Saldo
+        </Text>
+        <ActionIcon variant="subtle" onClick={() => setExpanded(!expanded)}>
+          <CaretDownIcon
+            size={20}
+            style={{
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}
           />
-        ) : (
-          <Text
-            size="xl"
-            fw={700}
-            mb={expanded ? 'md' : undefined}
-            style={{ transition: 'margin-bottom 0.2s ease' }}
-          >
-            {formatCurrency(totalBalance, primaryCurrency)}
-          </Text>
-        )}
+        </ActionIcon>
+      </Group>
 
-        <Collapse expanded={expanded}>
-          <Stack gap="xs">
-            {currencyOptions.map((opt) => (
-              <Group justify="space-between" key={opt.value}>
-                <Text size="sm">{opt.value}</Text>
-                {moduleLoading ? (
-                  <Skeleton mt="0.5ex" height="1em" width="5em" />
-                ) : (
-                  <Text size="sm" fw={500}>
-                    {formatCurrency(balance?.[opt.value] || 0, opt.value)}
-                  </Text>
-                )}
-              </Group>
-            ))}
-          </Stack>
-        </Collapse>
-      </Card>
-    </Box>
-    // </Grid.Col>
+      {moduleLoading ? (
+        <Skeleton
+          mt="0.5ex"
+          height="1.8em"
+          width="9em"
+          mb={expanded ? 'md' : undefined}
+          style={{ transition: 'margin-bottom 0.2s ease' }}
+        />
+      ) : (
+        <Text
+          size="xl"
+          fw={700}
+          mb={expanded ? 'md' : undefined}
+          style={{ transition: 'margin-bottom 0.2s ease' }}
+        >
+          {formatCurrency(totalBalance, primaryCurrency)}
+        </Text>
+      )}
+
+      <Collapse expanded={expanded}>
+        <Stack gap="xs">
+          {currencyOptions.map((opt) => (
+            <Group justify="space-between" key={opt.value}>
+              <Text size="sm">{opt.value}</Text>
+              {moduleLoading ? (
+                <Skeleton mt="0.5ex" height="1em" width="5em" />
+              ) : (
+                <Text size="sm" fw={500}>
+                  {formatCurrency(balance?.[opt.value] || 0, opt.value)}
+                </Text>
+              )}
+            </Group>
+          ))}
+        </Stack>
+      </Collapse>
+    </Card>
   );
 }

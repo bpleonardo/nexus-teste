@@ -89,7 +89,6 @@ export default function SwapModule({ currencyOptions }: SwapModuleProps) {
   };
 
   return (
-    // <Grid.Col span={{ base: 12, md: 6 }}>
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Text fw={700} size="lg" mb="lg">
         Swap
@@ -175,6 +174,5 @@ export default function SwapModule({ currencyOptions }: SwapModuleProps) {
         Confirmar Swap
       </Button>
     </Card>
-    // </Grid.Col>
   );
 }
