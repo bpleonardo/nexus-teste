@@ -11,11 +11,20 @@ import {
   TextInput,
   PasswordInput,
   Checkbox,
+  createTheme,
+  MantineProvider,
+  Anchor,
+  Text,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { login } from '@/lib/auth';
 import React, { useEffect } from 'react';
 import { InvalidCredentials } from '@/lib/errors';
+import Link from 'next/link';
+
+const theme = createTheme({
+  cursorType: 'pointer',
+});
 
 export default function LoginPage() {
   const router = useRouter();
@@ -100,15 +109,25 @@ export default function LoginPage() {
               placeholder="••••••••"
               required
             />
-            <Checkbox
-              {...form.getInputProps('remember', { type: 'checkbox' })}
-              label="Lembrar de mim"
-              variant="outline"
-            />
+            <MantineProvider theme={theme}>
+              <Checkbox
+                {...form.getInputProps('remember', { type: 'checkbox' })}
+                label="Lembrar de mim"
+                variant="outline"
+              />
+            </MantineProvider>
             <Button type="submit" fullWidth loading={form.submitting}>
               Login
             </Button>
           </Stack>
+
+          <Text mt="md">
+            Não possui uma conta?{' '}
+            <Anchor component={Link} href="/register">
+              Registrar-se
+            </Anchor>
+            .
+          </Text>
         </form>
       </Paper>
     </Container>
