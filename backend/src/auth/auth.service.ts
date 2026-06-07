@@ -157,10 +157,6 @@ export class AuthService {
       throw exception;
     }
 
-    if (storedToken.revokedAt) {
-      throw exception;
-    }
-
     const user = await this.dbService.user.findUnique({ where: { id: storedToken.userId } });
 
     if (!user) {
@@ -185,9 +181,8 @@ export class AuthService {
       notBefore: 0,
     });
 
-    await this.dbService.refreshToken.update({
+    await this.dbService.refreshToken.delete({
       where: { id: storedToken.id },
-      data: { revokedAt: new Date() },
     });
 
     // Blacklist the old access token until it expires, to prevent reuse.
