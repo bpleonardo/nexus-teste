@@ -18,7 +18,7 @@ export function clearAccessToken(): void {
 export async function login(email: string, password: string, remember: boolean): Promise<string> {
   const response = await request<{ token: string }>('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password, persist: remember }),
+    body: JSON.stringify({ email, password, persistent: remember }),
     needsAuth: false,
   });
 
@@ -42,31 +42,47 @@ export async function login(email: string, password: string, remember: boolean):
   return token;
 }
 
-export async function refreshAccessToken(): Promise<string> {
-  const response = await request<{ token: string }>('/auth/refresh', {
-    method: 'POST',
-    needsAuth: false, // The server does not read the access token for this endpoint.
-  });
+// We use this global variable to prevent multiple calls to
+// request from refreshing the token. This would make only the last one valid in the API.
+let refreshPromise: Promise<string | null> | null = null;
 
-  const data = response.body;
-
-  if (data?.success === false) {
-    clearAccessToken();
-
-    window.location.href = '/login?expired=1';
-
-    throw new Error('Session expired. Please log in again.');
+export async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) {
+    return refreshPromise;
   }
 
-  const newToken = data?.data.token;
+  refreshPromise = (async () => {
+    const response = await request<{ token: string }>('/auth/refresh', {
+      method: 'POST',
+      needsAuth: false,
+    });
 
-  if (!newToken) {
-    throw new Error('New token not received. Please try again.');
+    const data = response.body;
+
+    if (data?.success === false) {
+      clearAccessToken();
+
+      window.location.href = '/login?expired=1';
+
+      return null;
+    }
+
+    const newToken = data?.data.token;
+
+    if (!newToken) {
+      throw new Error('New token not received. Please try again.');
+    }
+
+    setAccessToken(newToken);
+
+    return newToken;
+  })();
+
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
   }
-
-  setAccessToken(newToken);
-
-  return newToken;
 }
 
 export async function register(userData: {
