@@ -138,7 +138,8 @@ export class AuthService {
   async refresh(refreshToken: string) {
     let decoded: any;
     const exception = new UnauthorizedException({
-      status: 401,
+      success: false,
+      code: Errors.INVALID_TOKEN,
       message: 'Invalid refresh token.',
     });
 

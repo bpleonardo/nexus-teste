@@ -12,6 +12,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UsePipes,
 } from '@nestjs/common';
 
@@ -21,6 +22,7 @@ import { ZodValidationPipe } from '@/pipes/zod-validation.pipe';
 import { AuthService } from './auth.service';
 import { type LoginDTO, loginSchema } from './dtos/login.dto';
 import { type RegisterDTO, registerSchema } from './dtos/register.dto';
+import { Errors } from '@/constants';
 
 @Controller('auth')
 export class AuthController {
@@ -69,6 +71,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies['refreshToken'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedException({
+        success: false,
+        code: Errors.MISSING_TOKEN,
+        message: 'Missing refresh token.',
+      });
+    }
 
     const { token, newRefreshToken } = await this.authService.refresh(refreshToken);
 
