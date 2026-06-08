@@ -11,8 +11,9 @@ import {
   TextInput,
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { executeSwap, getQuote, QuoteResponse } from '../api/wallet';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react';
+
+import { executeSwap, getQuote, QuoteResponse } from '../api/wallet';
 
 interface SwapModuleProps {
   currencyOptions: { value: string; label: string }[];

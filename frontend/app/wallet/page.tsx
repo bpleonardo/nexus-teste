@@ -1,13 +1,14 @@
 'use client';
 
-import { SimpleGrid, Stack } from '@mantine/core';
-import { KNOWN_CURRENCIES } from '@/lib/constants';
-import BalanceModule from '@/lib/components/BalanceModule';
-import Navbar from '@/lib/components/Navbar';
-import { TransactionsModule } from '@/lib/components/TransactionsModule';
-import WithdrawModule from '@/lib/components/WithdrawModule';
-import SwapModule from '@/lib/components/SwapModule';
 import { useState } from 'react';
+import { SimpleGrid, Stack } from '@mantine/core';
+
+import Navbar from '@/lib/components/Navbar';
+import { KNOWN_CURRENCIES } from '@/lib/constants';
+import SwapModule from '@/lib/components/SwapModule';
+import BalanceModule from '@/lib/components/BalanceModule';
+import WithdrawModule from '@/lib/components/WithdrawModule';
+import TransactionsModule from '@/lib/components/TransactionsModule';
 
 export default function WalletPage() {
   const currencyOptions = KNOWN_CURRENCIES.map((c) => ({ value: c, label: c }));

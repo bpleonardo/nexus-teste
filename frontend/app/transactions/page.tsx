@@ -1,24 +1,13 @@
 'use client';
 
-import {
-  Card,
-  Text,
-  Stack,
-  Skeleton,
-  Box,
-  Group,
-  Select,
-  Affix,
-  Transition,
-  Button,
-} from '@mantine/core';
-import { useIntersection, useToggle, useWindowScroll } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
+import { ArrowUpIcon, SortAscendingIcon } from '@phosphor-icons/react';
+import { useIntersection, useToggle, useWindowScroll } from '@mantine/hooks';
+import { Card, Text, Stack, Skeleton, Box, Group, Affix, Transition, Button } from '@mantine/core';
 
 import Navbar from '@/lib/components/Navbar';
 import Transaction from '@/lib/components/Transaction';
 import { getPaginatedTransactions, TransactionType } from '@/lib/api/wallet';
-import { ArrowUpIcon, SortAscendingIcon, SortDescendingIcon } from '@phosphor-icons/react';
 
 const dummyTransaction: TransactionType = {
   date: new Date().toDateString(),

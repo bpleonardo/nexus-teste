@@ -1,15 +1,16 @@
 'use client';
 
-import { Anchor, Avatar, Group, Menu, Text, Burger, Collapse, Stack, Box } from '@mantine/core';
+import Link from 'next/link';
+import { decodeToken } from 'react-jwt';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import { CaretDownIcon, SignOutIcon } from '@phosphor-icons/react';
+import { Anchor, Avatar, Group, Menu, Text, Burger, Collapse, Stack, Box } from '@mantine/core';
+
 import { logout } from '../api/wallet';
-import { useRouter } from 'next/navigation';
-import { clearAccessToken, getAccessToken } from '@/lib/auth';
 import { getFirstAndLastName, getInitials } from '../methods';
-import { useEffect, useState } from 'react';
-import { decodeToken } from 'react-jwt';
-import Link from 'next/link';
+import { clearAccessToken, getAccessToken } from '@/lib/auth';
 
 export default function Navbar() {
   const router = useRouter();

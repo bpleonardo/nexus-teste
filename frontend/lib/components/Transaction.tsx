@@ -1,4 +1,5 @@
 import { Badge, Group, Text, Box } from '@mantine/core';
+
 import { formatCurrency } from '../methods';
 import { TransactionType } from '../api/wallet';
 

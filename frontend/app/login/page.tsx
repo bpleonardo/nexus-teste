@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import {
   Container,
   Paper,
@@ -16,11 +15,13 @@ import {
   Anchor,
   Text,
 } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { login } from '@/lib/auth';
-import React, { useEffect } from 'react';
-import { InvalidCredentials } from '@/lib/errors';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useForm } from '@mantine/form';
+import { useRouter } from 'next/navigation';
+
+import { login } from '@/lib/auth';
+import { InvalidCredentials } from '@/lib/errors';
 
 const theme = createTheme({
   cursorType: 'pointer',
@@ -29,7 +30,7 @@ const theme = createTheme({
 export default function LoginPage() {
   const router = useRouter();
 
-  const [error, setError] = React.useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');

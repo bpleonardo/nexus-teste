@@ -1,9 +1,10 @@
-import { ActionIcon, Anchor, Card, Collapse, Group, Skeleton, Stack, Text } from '@mantine/core';
-import { getTransactions, TransactionType } from '../api/wallet';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CaretDownIcon } from '@phosphor-icons/react';
+import { ActionIcon, Anchor, Card, Collapse, Group, Skeleton, Stack, Text } from '@mantine/core';
+
 import Transaction from './Transaction';
-import Link from 'next/link';
+import { getTransactions, TransactionType } from '../api/wallet';
 
 const dummyTransaction: TransactionType = {
   date: new Date().toDateString(),
@@ -19,7 +20,7 @@ interface TransactionsModuleProps {
   refreshTrigger?: number;
 }
 
-export function TransactionsModule({ refreshTrigger = 0 }: TransactionsModuleProps) {
+export default function TransactionsModule({ refreshTrigger = 0 }: TransactionsModuleProps) {
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<TransactionType[]>(
     Array(5).fill(dummyTransaction),

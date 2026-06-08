@@ -1,8 +1,8 @@
 'use client';
 
-import { Container, Text, Button, Group, Box } from '@mantine/core';
 import Link from 'next/link';
-import { ArrowRight } from '@phosphor-icons/react';
+import { ArrowRightIcon } from '@phosphor-icons/react';
+import { Container, Text, Button, Group, Box } from '@mantine/core';
 
 export default function Home() {
   return (
@@ -52,7 +52,7 @@ export default function Home() {
             radius="md"
             variant="gradient"
             gradient={{ from: 'violet', to: 'cyan', deg: 45 }}
-            rightSection={<ArrowRight weight="bold" />}
+            rightSection={<ArrowRightIcon weight="bold" />}
           >
             Começar
           </Button>

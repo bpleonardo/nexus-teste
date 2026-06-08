@@ -8,9 +8,9 @@ import {
   Text,
   RollingNumber,
 } from '@mantine/core';
-import { CaretDownIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
-import { formatCurrency } from '../methods';
+import { CaretDownIcon } from '@phosphor-icons/react';
+
 import { getBalance, type Balance } from '../api/wallet';
 import { primaryCurrency, CURRENCY_SYMBOLS } from '../constants';
 

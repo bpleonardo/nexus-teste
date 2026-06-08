@@ -1,5 +1,5 @@
-import { InvalidCredentials, UserAlreadyExists } from './errors';
 import { request } from './request';
+import { InvalidCredentials, UserAlreadyExists } from './errors';
 
 export function setAccessToken(token: string): void {
   // Tokens are safe to be stored in localStorage since they are short-lived and
