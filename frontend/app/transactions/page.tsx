@@ -12,13 +12,13 @@ import {
   Transition,
   Button,
 } from '@mantine/core';
-import { useIntersection, useWindowScroll } from '@mantine/hooks';
+import { useIntersection, useToggle, useWindowScroll } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 
 import Navbar from '@/lib/components/Navbar';
 import Transaction from '@/lib/components/Transaction';
 import { getPaginatedTransactions, TransactionType } from '@/lib/api/wallet';
-import { ArrowUpIcon } from '@phosphor-icons/react';
+import { ArrowUpIcon, SortAscendingIcon, SortDescendingIcon } from '@phosphor-icons/react';
 
 const dummyTransaction: TransactionType = {
   date: new Date().toDateString(),
@@ -41,7 +41,10 @@ export default function TransactionsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortOrder, toggleSortOrder] = useToggle([
+    { key: 'desc', label: 'Mais antigos' },
+    { key: 'asc', label: 'Mais novos' },
+  ]);
 
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -57,7 +60,7 @@ export default function TransactionsPage() {
       setPageLoading(true);
 
       try {
-        const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, null, sortOrder);
+        const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, null, sortOrder.key);
 
         if (data) {
           setTransactions(data.transactions);
@@ -81,7 +84,7 @@ export default function TransactionsPage() {
       setLoadingMore(true);
 
       try {
-        const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, cursor, sortOrder);
+        const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, cursor, sortOrder.key);
 
         if (data) {
           setTransactions((prev) => [...prev, ...data.transactions]);
@@ -111,15 +114,22 @@ export default function TransactionsPage() {
           <Group gap="xs">
             <Text size="sm">Ordenação:</Text>
 
-            <Select
-              value={sortOrder}
-              onChange={(value) => setSortOrder(value ?? 'desc')}
-              data={[
-                { value: 'desc', label: 'Mais novos' },
-                { value: 'asc', label: 'Mais antigos' },
-              ]}
-              w={160}
-            />
+            <Button
+              rightSection={
+                <SortAscendingIcon
+                  size={20}
+                  style={{
+                    transform: sortOrder.key === 'desc' ? 'rotate(180deg) scaleX(-1)' : '',
+                    transition: 'transform 0.2s',
+                  }}
+                ></SortAscendingIcon>
+              }
+              variant="default"
+              style={{ transition: 'width 0.2s' }}
+              onClick={() => toggleSortOrder()}
+            >
+              {sortOrder.label}
+            </Button>
           </Group>
         </Group>
 
