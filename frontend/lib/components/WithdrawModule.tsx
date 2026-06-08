@@ -4,9 +4,10 @@ import { withdraw } from '../api/wallet';
 
 interface WithdrawModuleProps {
   currencyOptions: { value: string; label: string }[];
+  onSuccess?: () => void;
 }
 
-export default function WithdrawModule({ currencyOptions }: WithdrawModuleProps) {
+export default function WithdrawModule({ currencyOptions, onSuccess }: WithdrawModuleProps) {
   const [token, setToken] = useState<string | null>('BRL');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ export default function WithdrawModule({ currencyOptions }: WithdrawModuleProps)
       setLoading(true);
       await withdraw(token, parseFloat(amount));
       setAmount('');
+      onSuccess?.();
     } catch (error) {
       console.error('Withdraw failed:', error);
     } finally {

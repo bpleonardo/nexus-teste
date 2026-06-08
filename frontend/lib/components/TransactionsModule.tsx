@@ -15,8 +15,12 @@ const dummyTransaction: TransactionType = {
   destinationAmount: null,
 };
 
-export function TransactionsModule() {
-  const [moduleLoading, setModuleLoading] = useState(true);
+interface TransactionsModuleProps {
+  refreshTrigger?: number;
+}
+
+export function TransactionsModule({ refreshTrigger = 0 }: TransactionsModuleProps) {
+  const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<TransactionType[]>(
     Array(5).fill(dummyTransaction),
   );
@@ -25,15 +29,16 @@ export function TransactionsModule() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setLoading(true);
         setTransactions(await getTransactions(5));
-        setModuleLoading(false);
+        setLoading(false);
       } catch (error) {
         console.error('Failed to load wallet data:', error);
       }
     };
 
     loadData();
-  }, []);
+  }, [refreshTrigger]);
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -68,7 +73,7 @@ export function TransactionsModule() {
             </Text>
           ) : (
             transactions.map((tx, idx) => (
-              <Skeleton key={`${tx.date}-${idx}`} visible={moduleLoading}>
+              <Skeleton key={`${tx.date}-${idx}`} visible={loading}>
                 <Transaction transaction={tx} />
               </Skeleton>
             ))

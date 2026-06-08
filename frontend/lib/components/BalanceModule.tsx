@@ -1,16 +1,25 @@
-import { ActionIcon, Card, Collapse, Group, Skeleton, Stack, Text } from '@mantine/core';
+import {
+  ActionIcon,
+  Card,
+  Collapse,
+  Group,
+  Skeleton,
+  Stack,
+  Text,
+  RollingNumber,
+} from '@mantine/core';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { formatCurrency } from '../methods';
 import { getBalance, type Balance } from '../api/wallet';
-import { primaryCurrency } from '../constants';
+import { primaryCurrency, CURRENCY_SYMBOLS } from '../constants';
 
 interface BalanceModuleProps {
   currencyOptions: { label: string; value: string }[];
+  refreshTrigger?: number;
 }
 
-export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
-  const [moduleLoading, setModuleLoading] = useState(true);
+export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: BalanceModuleProps) {
   const [expanded, setExpanded] = useState(false);
   const [balance, setBalance] = useState<Balance | null>(null);
 
@@ -19,12 +28,11 @@ export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
       const balance = await getBalance();
       if (balance) {
         setBalance(balance);
-        setModuleLoading(false);
       }
     };
 
     loadData();
-  }, []);
+  }, [refreshTrigger]);
 
   const totalBalance = balance?.totalInBRL || 0;
 
@@ -45,7 +53,7 @@ export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
         </ActionIcon>
       </Group>
 
-      {moduleLoading ? (
+      {!balance ? (
         <Skeleton
           mt="0.5ex"
           height="1.8em"
@@ -59,8 +67,20 @@ export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
           fw={700}
           mb={expanded ? 'md' : undefined}
           style={{ transition: 'margin-bottom 0.2s ease' }}
+          component="div"
         >
-          {formatCurrency(totalBalance, primaryCurrency)}
+          <RollingNumber
+            value={totalBalance}
+            prefix={
+              CURRENCY_SYMBOLS[primaryCurrency]
+                ? `${CURRENCY_SYMBOLS[primaryCurrency]} `
+                : `${primaryCurrency} `
+            }
+            decimalSeparator={primaryCurrency === 'BRL' ? ',' : '.'}
+            thousandSeparator={primaryCurrency === 'BRL' ? '.' : false}
+            decimalScale={primaryCurrency === 'BRL' ? 2 : 8}
+            fixedDecimalScale={primaryCurrency === 'BRL'}
+          />
         </Text>
       )}
 
@@ -69,11 +89,22 @@ export default function BalanceModule({ currencyOptions }: BalanceModuleProps) {
           {currencyOptions.map((opt) => (
             <Group justify="space-between" key={opt.value}>
               <Text size="sm">{opt.value}</Text>
-              {moduleLoading ? (
+              {!balance ? (
                 <Skeleton mt="0.5ex" height="1em" width="5em" />
               ) : (
-                <Text size="sm" fw={500}>
-                  {formatCurrency(balance?.[opt.value] || 0, opt.value)}
+                <Text size="sm" fw={500} component="div">
+                  <RollingNumber
+                    value={balance[opt.value] || 0}
+                    prefix={
+                      CURRENCY_SYMBOLS[opt.value]
+                        ? `${CURRENCY_SYMBOLS[opt.value]} `
+                        : `${opt.value} `
+                    }
+                    decimalSeparator={opt.value === 'BRL' ? ',' : '.'}
+                    thousandSeparator={opt.value === 'BRL' ? '.' : false}
+                    decimalScale={opt.value === 'BRL' ? 2 : 8}
+                    fixedDecimalScale={opt.value === 'BRL'}
+                  />
                 </Text>
               )}
             </Group>

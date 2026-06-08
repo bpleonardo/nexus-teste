@@ -16,9 +16,10 @@ import { ArrowsLeftRightIcon } from '@phosphor-icons/react';
 
 interface SwapModuleProps {
   currencyOptions: { value: string; label: string }[];
+  onSuccess?: () => void;
 }
 
-export default function SwapModule({ currencyOptions }: SwapModuleProps) {
+export default function SwapModule({ currencyOptions, onSuccess }: SwapModuleProps) {
   const [originToken, setOriginToken] = useState<string | null>('BTC');
   const [destinationToken, setDestinationToken] = useState<string | null>('BRL');
 
@@ -80,6 +81,7 @@ export default function SwapModule({ currencyOptions }: SwapModuleProps) {
 
       setAmount('');
       setQuote(null);
+      onSuccess?.();
     } catch (error) {
       console.error('Swap failed:', error);
     } finally {
