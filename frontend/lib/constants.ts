@@ -1,4 +1,4 @@
-export const BASE_API_URL = '/api';
+export const BASE_API_URL = process.env.API_URL || 'http://localhost/api';
 export const CURRENCY_SYMBOLS: Record<string, string> = {
   BRL: 'R$',
   BTC: '₿',
