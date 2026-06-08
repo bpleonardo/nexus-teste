@@ -1,9 +1,0 @@
-node_modules/
-.editorconfig
-.dockerignore
-.env.example
-.gitignore
-.prettierrc
-docker-compose.yml
-Dockerfile
-nest-cli.json
