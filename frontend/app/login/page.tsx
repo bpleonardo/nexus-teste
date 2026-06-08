@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   Container,
   Paper,
@@ -28,7 +28,8 @@ const theme = createTheme({
 
 export default function LoginPage() {
   const router = useRouter();
-  const params = useSearchParams();
+
+  const [error, setError] = React.useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -37,8 +38,6 @@ export default function LoginPage() {
       router.push('/wallet');
     }
   }, [router]);
-
-  const [error, setError] = React.useState<string | null>(null);
 
   const form = useForm({
     initialValues: {
@@ -56,6 +55,12 @@ export default function LoginPage() {
     validateInputOnBlur: true,
   });
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    setError(params.get('expired') ? 'Sua sessão expirou. Por favor, faça login novamente.' : null);
+  }, []);
+
   const handleSubmit = form.onSubmit(async (values) => {
     try {
       await login(values.email, values.password, values.remember);
@@ -68,10 +73,6 @@ export default function LoginPage() {
       }
     }
   });
-
-  useEffect(() => {
-    setError(params.get('expired') ? 'Sua sessão expirou. Por favor, faça login novamente.' : null);
-  }, [params]);
 
   return (
     <Container size="xs" py="xl">
