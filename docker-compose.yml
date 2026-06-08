@@ -26,12 +26,12 @@ services:
       - ./.env
     restart: on-failure:5
   nginx:
-    image: nginx:latest
+    build:
+      context: ./nginx
+      dockerfile: ./Dockerfile
     ports:
       - '80:80'
     restart: on-failure:5
-    volumes:
-      - ./resources/nginx/default.conf:/etc/nginx/conf.d/default.conf
 
 volumes:
   postgres_data:
