@@ -1,6 +1,7 @@
 'use client';
 
-import { Anchor, Avatar, Group, Menu, Text } from '@mantine/core';
+import { Anchor, Avatar, Group, Menu, Text, Burger, Collapse, Stack, Box } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { CaretDownIcon, SignOutIcon } from '@phosphor-icons/react';
 import { logout } from '../api/wallet';
 import { useRouter } from 'next/navigation';
@@ -13,6 +14,7 @@ import Link from 'next/link';
 export default function Navbar() {
   const router = useRouter();
   const [username, setUsername] = useState<string>('Usuário');
+  const [opened, { toggle, close }] = useDisclosure(false);
 
   const initials = getInitials(username);
 
@@ -38,41 +40,66 @@ export default function Navbar() {
   };
 
   return (
-    <Group justify="space-between" mb="md" p="md" style={{ borderBottom: '1px solid #e0e0e0' }}>
-      <Text
-        fw={500}
-        variant="gradient"
-        size="lg"
-        gradient={{ from: 'violet', to: 'cyan', deg: 45 }}
-      >
-        Carteira Nexus
-      </Text>
-      <Group gap="sm">
-        <Group justify="space-around" mr="sm">
-          <Anchor component={Link} href="/wallet">
+    <Box mb="md">
+      <Group justify="space-between" p="md" style={{ borderBottom: '1px solid #e0e0e0' }}>
+        <Anchor
+          fw={500}
+          variant="gradient"
+          size="lg"
+          gradient={{ from: 'violet', to: 'cyan', deg: 45 }}
+          href="/"
+        >
+          Carteira Nexus
+        </Anchor>
+        <Group gap="sm" visibleFrom="sm">
+          <Group justify="space-around" mr="sm">
+            <Anchor component={Link} href="/wallet" c="black">
+              Carteira
+            </Anchor>
+            <Anchor component={Link} href="/transactions" c="black">
+              Transações
+            </Anchor>
+          </Group>
+          <Menu>
+            <Menu.Target>
+              <Group gap={8} style={{ cursor: 'pointer' }}>
+                <Avatar color="teal" radius="xl">
+                  {initials}
+                </Avatar>
+                <Text>{getFirstAndLastName(username)}</Text>
+                <CaretDownIcon size={16} />
+              </Group>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item onClick={doLogout} leftSection={<SignOutIcon size={20} />} color="red">
+                Sair
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </Group>
+        <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+      </Group>
+
+      <Collapse expanded={opened} hiddenFrom="sm">
+        <Stack px="md" pb="md" pt="sm" style={{ borderBottom: '1px solid #e0e0e0' }}>
+          <Anchor component={Link} href="/wallet" onClick={close} c="black">
             Carteira
           </Anchor>
-          <Anchor component={Link} href="/transactions">
+          <Anchor component={Link} href="/transactions" onClick={close} c="black">
             Transações
           </Anchor>
-        </Group>
-        <Menu>
-          <Menu.Target>
-            <Group gap={8} style={{ cursor: 'pointer' }}>
+
+          <Group justify="space-between" mt="sm">
+            <Group gap={8}>
               <Avatar color="teal" radius="xl">
                 {initials}
               </Avatar>
-              <Text>{getFirstAndLastName(username)}</Text>
-              <CaretDownIcon size={16} />
+              <Text fw={500}>{getFirstAndLastName(username)}</Text>
             </Group>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item onClick={doLogout} leftSection={<SignOutIcon size={20} />} color="red">
-              Sair
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      </Group>
-    </Group>
+            <SignOutIcon size={24} color="red" onClick={doLogout} style={{ cursor: 'pointer' }} />
+          </Group>
+        </Stack>
+      </Collapse>
+    </Box>
   );
 }
