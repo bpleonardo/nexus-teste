@@ -62,8 +62,8 @@ export class WalletService {
     const quote = response.data[fromId][toId];
 
     await this.redisClient.set(key, quote.toString(), {
-      expiration: { type: 'EX', value: 5 * 60 },
-    }); // cache for 5 minutes.
+      expiration: { type: 'EX', value: 10 * 60 },
+    }); // cache for 10 minutes.
 
     const calculated = quote * amount;
     const tax = calculated * this.configService.get('app.transactionTax');
@@ -226,8 +226,6 @@ export class WalletService {
   }
 
   async swap(userId: string, fromCurrency: string, toCurrency: string, amount: number) {
-    const quote = await this.getQuote(fromCurrency, toCurrency, amount, false);
-
     const userBalance = await this.getBalance(userId, false, false);
 
     if (userBalance.balance[fromCurrency.toUpperCase()] < amount) {
@@ -237,6 +235,8 @@ export class WalletService {
         message: 'Insufficient balance',
       });
     }
+
+    const quote = await this.getQuote(fromCurrency, toCurrency, amount, false);
 
     await this.dbService.$transaction(async (tx) => {
       const transactionId = crypto.randomUUID();
