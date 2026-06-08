@@ -36,9 +36,9 @@ export class AuthController {
     this.httpPath = reflector.get<string>('path', AuthController);
   }
 
-  private setRefreshTokenCookie(res: Response, refreshToken: string) {
+  private setRefreshTokenCookie(res: Response, refreshToken: string, persistent: boolean = true) {
     res.cookie('refreshToken', refreshToken, {
-      maxAge: this.configService.get<number>('jwt.refreshTokenExpiration'),
+      maxAge: persistent ? this.configService.get<number>('jwt.refreshTokenExpiration') : undefined,
       httpOnly: true,
       path: `/${this.httpPath}/refresh`,
       secure: true,
@@ -59,9 +59,7 @@ export class AuthController {
   async login(@Res({ passthrough: true }) res: Response, @Body() body: LoginDTO) {
     const { token, refreshToken } = await this.authService.login(body);
 
-    if (refreshToken) {
-      this.setRefreshTokenCookie(res, refreshToken);
-    }
+    this.setRefreshTokenCookie(res, refreshToken, body.persistent);
 
     return { success: true, data: { token } };
   }
@@ -80,9 +78,9 @@ export class AuthController {
       });
     }
 
-    const { token, newRefreshToken } = await this.authService.refresh(refreshToken);
+    const { token, newRefreshToken, persistent } = await this.authService.refresh(refreshToken);
 
-    this.setRefreshTokenCookie(res, newRefreshToken);
+    this.setRefreshTokenCookie(res, newRefreshToken, persistent);
 
     return { success: true, data: { token } };
   }

@@ -108,23 +108,21 @@ export class AuthService {
 
     const { token, jti } = await this.genAccessToken(user.id, user.name);
 
-    let refreshToken: string | null = null;
-    if (dto.persistent) {
-      const refreshInDb = await this.dbService.refreshToken.create({
-        data: {
-          id: randomUUID(),
-          userId: user.id,
-          issuedAt: new Date(),
-          jti: jti,
-        },
-      });
+    const refreshInDb = await this.dbService.refreshToken.create({
+      data: {
+        id: randomUUID(),
+        userId: user.id,
+        issuedAt: new Date(),
+        jti: jti,
+      },
+    });
 
-      const refreshPayload = { jti: refreshInDb.id };
-      refreshToken = await this.jwtService.signAsync(refreshPayload, {
-        expiresIn: this.configService.get<number>('jwt.refreshTokenExpiration')! / 1000,
-        notBefore: 0,
-      });
-    }
+    const refreshPayload = { jti: refreshInDb.id, persistent: dto.persistent };
+
+    const refreshToken = await this.jwtService.signAsync(refreshPayload, {
+      expiresIn: this.configService.get<number>('jwt.refreshTokenExpiration')! / 1000,
+      notBefore: 0,
+    });
 
     return { token, refreshToken };
   }
@@ -174,8 +172,7 @@ export class AuthService {
       },
     });
 
-    const refreshPayload = { jti: newRefreshDb.id };
-
+    const refreshPayload = { jti: newRefreshDb.id, persistent: decoded.persistent };
     const newRefreshToken = await this.jwtService.signAsync(refreshPayload, {
       expiresIn: this.configService.get<number>('jwt.refreshTokenExpiration')! / 1000,
       notBefore: 0,
@@ -188,7 +185,7 @@ export class AuthService {
     // Blacklist the old access token until it expires, to prevent reuse.
     await this.blacklistToken(storedToken.jti);
 
-    return { token, newRefreshToken };
+    return { token, newRefreshToken, persistent: decoded.persistent };
   }
 
   async logout(accessToken: Record<string, string>, allDevices: boolean) {
