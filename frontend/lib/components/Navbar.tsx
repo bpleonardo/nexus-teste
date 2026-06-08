@@ -39,8 +39,13 @@ export default function Navbar() {
 
   return (
     <Group justify="space-between" mb="md" p="md" style={{ borderBottom: '1px solid #e0e0e0' }}>
-      <Text fw={500} size="lg">
-        Nexus Wallet
+      <Text
+        fw={500}
+        variant="gradient"
+        size="lg"
+        gradient={{ from: 'violet', to: 'cyan', deg: 45 }}
+      >
+        Carteira Nexus
       </Text>
       <Group gap="sm">
         <Group justify="space-around" mr="sm">

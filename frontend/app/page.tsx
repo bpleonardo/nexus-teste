@@ -1,14 +1,63 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Container, Text, Button, Group, Box } from '@mantine/core';
+import Link from 'next/link';
+import { ArrowRight } from '@phosphor-icons/react';
 
 export default function Home() {
-  const router = useRouter();
+  return (
+    <Box
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <Container size="md" style={{ textAlign: 'center' }}>
+        <Text
+          component="h1"
+          fw={900}
+          variant="gradient"
+          gradient={{ from: 'violet', to: 'cyan', deg: 45 }}
+          style={{
+            fontSize: 'clamp(3rem, 5vw, 5rem)',
+            marginBottom: '1rem',
+            lineHeight: 1.1,
+            letterSpacing: '-0.02em',
+            margin: 0,
+            paddingBottom: '1rem',
+          }}
+        >
+          Bem-vindo a Carteira Nexus
+        </Text>
 
-  useEffect(() => {
-    router.push('/login');
-  }, [router]);
+        <Text
+          c="dimmed"
+          size="xl"
+          style={{
+            maxWidth: 600,
+            margin: '0 auto',
+            marginBottom: '2.5rem',
+            lineHeight: 1.6,
+          }}
+        >
+          Experimente a carteira de criptomoedas da Nexus. A sua melhor carteira digital!
+        </Text>
 
-  return null;
+        <Group justify="center">
+          <Button
+            component={Link}
+            href="/login"
+            size="xl"
+            radius="md"
+            variant="gradient"
+            gradient={{ from: 'violet', to: 'cyan', deg: 45 }}
+            rightSection={<ArrowRight weight="bold" />}
+          >
+            Começar
+          </Button>
+        </Group>
+      </Container>
+    </Box>
+  );
 }
