@@ -1,13 +1,18 @@
 # syntax=docker/dockerfile:1.7
 
+ARG NODE_VERSION=24.13.0
+
 # =========================
 # Builder
 # =========================
-FROM node:26 AS builder
+FROM node:${NODE_VERSION} AS builder
 
 WORKDIR /usr/src/app
 
-RUN npm install -g yarn
+
+RUN corepack enable
+
+RUN corepack prepare yarn@1.22.22 --activate
 
 COPY package.json yarn.lock ./
 
@@ -34,11 +39,13 @@ RUN yarn build
 # =========================
 # Production dependencies
 # =========================
-FROM node:26 AS prod-deps
+FROM node:${NODE_VERSION} AS prod-deps
 
 WORKDIR /usr/src/app
 
-RUN npm install -g yarn
+RUN corepack enable
+
+RUN corepack prepare yarn@1.22.22 --activate
 
 COPY package.json yarn.lock ./
 
@@ -52,23 +59,27 @@ RUN --mount=type=cache,id=yarn-prod,target=/yarn-cache \
 # =========================
 # Runtime
 # =========================
-FROM node:26-slim AS runner
+FROM node:${NODE_VERSION}-slim AS runner
 
 WORKDIR /usr/src/app
 
-RUN npm install -g yarn
+RUN corepack enable
+
+RUN corepack prepare yarn@1.22.22 --activate
 
 ENV NODE_ENV=production
 
-COPY --from=prod-deps /usr/src/app/node_modules ./node_modules
-COPY --from=prod-deps /usr/src/app/package.json ./package.json
+COPY --chown=node:node --from=prod-deps /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node --from=prod-deps /usr/src/app/package.json ./package.json
 
 # Prisma runtime files
-COPY --from=builder /usr/src/app/prisma ./prisma
-COPY --from=builder /usr/src/app/prisma.config.ts ./prisma.config.ts
+COPY --chown=node:node --from=builder /usr/src/app/prisma ./prisma
+COPY --chown=node:node --from=builder /usr/src/app/prisma.config.ts ./prisma.config.ts
 
 # Application
-COPY --from=builder /usr/src/app/dist ./dist
+COPY --chown=node:node --from=builder /usr/src/app/dist ./dist
+
+USER node
 
 EXPOSE 3000
 
