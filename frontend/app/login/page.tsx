@@ -21,7 +21,7 @@ import { redirect, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { login } from '@/lib/api/auth';
-import { InvalidCredentials } from '@/lib/errors';
+import { InvalidCredentials, Redirect } from '@/lib/errors';
 
 const theme = createTheme({
   cursorType: 'pointer',
@@ -71,6 +71,8 @@ export default function LoginPage() {
         setError('Email ou senha inválidos.');
       } else if (err instanceof TypeError) {
         setError('Falha ao se comunicar com o servidor. Tente novamente.');
+      } else if (err instanceof Redirect) {
+        return;
       } else {
         setError('Ocorreu um erro ao tentar fazer login. Tente novamente.');
         throw err;

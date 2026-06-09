@@ -17,6 +17,7 @@ import { ArrowsLeftRightIcon } from '@phosphor-icons/react';
 
 import { executeSwap, getQuote, QuoteResponse } from '../api/wallet';
 import { formatCurrency } from '../methods';
+import { Redirect } from '../errors';
 
 interface SwapModuleProps {
   currencyOptions: { value: string; label: string }[];
@@ -67,6 +68,9 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
 
         setQuote(result);
       } catch (err) {
+        if (err instanceof Redirect) {
+        }
+
         console.error(err);
         setQuoteError('Falha ao obter cotação.');
       } finally {
@@ -91,6 +95,10 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
       setQuote(null);
       onSuccess?.();
     } catch (err) {
+      if (err instanceof Redirect) {
+        return;
+      }
+
       console.error('Swap failed:', err);
       notifications.show({
         color: 'red',

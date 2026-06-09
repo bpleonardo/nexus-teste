@@ -3,6 +3,7 @@ import { Button, Card, Select, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 
 import { withdraw } from '../api/wallet';
+import { Redirect } from '../errors';
 
 interface WithdrawModuleProps {
   currencyOptions: { value: string; label: string }[];
@@ -25,6 +26,10 @@ export default function WithdrawModule({ currencyOptions, onSuccess }: WithdrawM
       setAmount('');
       onSuccess?.();
     } catch (err) {
+      if (err instanceof Redirect) {
+        return;
+      }
+
       console.error('Withdraw failed:', err);
       notifications.show({
         color: 'red',

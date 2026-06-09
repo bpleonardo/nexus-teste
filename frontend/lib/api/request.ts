@@ -1,5 +1,6 @@
 import { BASE_API_URL } from '../constants';
 import { getAccessToken, refreshAccessToken } from './auth';
+import { Redirect } from '../errors';
 
 interface ErrorResponse {
   success: false;
@@ -27,7 +28,7 @@ interface ResponseData<T> {
 
 export function redirect(href: string): never {
   window.location.href = href;
-  throw new Error('Redirection happening......');
+  throw new Redirect('Redirection happening......');
 }
 
 export async function request<T>(

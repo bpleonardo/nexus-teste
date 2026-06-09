@@ -17,6 +17,7 @@ import { CaretDownIcon } from '@phosphor-icons/react';
 import { getBalance, type Balance } from '../api/wallet';
 import { primaryCurrency, CURRENCY_SYMBOLS } from '../constants';
 import { notifications } from '@mantine/notifications';
+import { Redirect } from '../errors';
 
 interface BalanceModuleProps {
   currencyOptions: { label: string; value: string }[];
@@ -42,6 +43,9 @@ export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: B
         throw new Error('Failed to load.');
       }
     } catch (err) {
+      if (err instanceof Redirect) {
+        return;
+      }
       console.error('Failed to load balance:', err);
       setError(true);
 

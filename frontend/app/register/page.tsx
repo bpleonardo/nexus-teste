@@ -22,7 +22,7 @@ import { UserCircleIcon, MapPinIcon, IdentificationCardIcon } from '@phosphor-ic
 
 import { register } from '@/lib/api/auth';
 import { validateCPF } from '@/lib/validators';
-import { UserAlreadyExists } from '@/lib/errors';
+import { Redirect, UserAlreadyExists } from '@/lib/errors';
 
 function getStrengthColor(strength: number) {
   switch (true) {
@@ -151,6 +151,8 @@ export default function RegisterPage() {
       if (err instanceof UserAlreadyExists) {
         setError('Um usuário com este email, CPF ou telefone já existe.');
         setActive(0);
+        return;
+      } else if (err instanceof Redirect) {
         return;
       }
       setError('Ocorreu um erro ao tentar registrar. Tente novamente.');
