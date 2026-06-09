@@ -55,4 +55,4 @@ USER node
 
 EXPOSE 3000
 
-CMD ["serve", "-s", "out", "-l", "3000", "-n"]
+CMD ["serve", "out", "-l", "3000", "-n"]
