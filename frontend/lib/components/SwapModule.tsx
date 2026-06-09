@@ -9,7 +9,9 @@ import {
   Stack,
   Text,
   TextInput,
+  Alert,
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react';
 
@@ -30,6 +32,7 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
   const [loadingQuote, setLoadingQuote] = useState(false);
 
   const [loadingSwap, setLoadingSwap] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
 
   const swapDirection = () => {
     setOriginToken(destinationToken);
@@ -39,6 +42,7 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
 
   useEffect(() => {
     setQuote(null);
+    setQuoteError(null);
     if (!originToken || !destinationToken || !amount) {
       return;
     }
@@ -60,8 +64,9 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
         }
 
         setQuote(result);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
+        setQuoteError('Falha ao obter cotação.');
       } finally {
         setLoadingQuote(false);
       }
@@ -83,8 +88,13 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
       setAmount('');
       setQuote(null);
       onSuccess?.();
-    } catch (error) {
-      console.error('Swap failed:', error);
+    } catch (err) {
+      console.error('Swap failed:', err);
+      notifications.show({
+        color: 'red',
+        title: 'Erro',
+        message: 'Falha ao realizar o swap. Tente novamente.',
+      });
     } finally {
       setLoadingSwap(false);
     }
@@ -163,6 +173,12 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
             </Group>
           </Stack>
         </Card>
+      )}
+
+      {quoteError && !loadingQuote && (
+        <Alert color="red" mt="md" variant="light">
+          {quoteError}
+        </Alert>
       )}
 
       <Button

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, Card, Select, Text, TextInput } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 
 import { withdraw } from '../api/wallet';
 
@@ -21,8 +22,13 @@ export default function WithdrawModule({ currencyOptions, onSuccess }: WithdrawM
       await withdraw(token, parseFloat(amount));
       setAmount('');
       onSuccess?.();
-    } catch (error) {
-      console.error('Withdraw failed:', error);
+    } catch (err) {
+      console.error('Withdraw failed:', err);
+      notifications.show({
+        color: 'red',
+        title: 'Erro',
+        message: 'Falha ao realizar o saque. Tente novamente.',
+      });
     } finally {
       setLoading(false);
     }
@@ -39,7 +45,9 @@ export default function WithdrawModule({ currencyOptions, onSuccess }: WithdrawM
         placeholder="Selecionar token"
         data={currencyOptions}
         value={token}
-        onChange={setToken}
+        onChange={(val) => {
+          setToken(val);
+        }}
         mb="md"
         searchable
       />
@@ -48,7 +56,9 @@ export default function WithdrawModule({ currencyOptions, onSuccess }: WithdrawM
         label="Quantia"
         placeholder="0.00"
         value={amount}
-        onChange={(e) => setAmount(e.currentTarget.value)}
+        onChange={(e) => {
+          setAmount(e.currentTarget.value);
+        }}
         mb="md"
         type="number"
         min="0"

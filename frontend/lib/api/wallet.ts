@@ -57,11 +57,11 @@ export async function getTransactions(limit: number = 5) {
     },
   );
 
-  if (response.body?.success === false) {
-    throw new Error(response.body.message);
+  if (!response.body || response.body?.success === false) {
+    throw new Error(response.body?.message || 'Failed to fetch transactions');
   }
 
-  return response.body?.data?.transactions || [];
+  return response.body.data.transactions;
 }
 
 export async function getPaginatedTransactions(

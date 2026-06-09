@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ArrowUpIcon, SortAscendingIcon } from '@phosphor-icons/react';
 import { useIntersection, useToggle, useWindowScroll } from '@mantine/hooks';
 import { Card, Text, Stack, Skeleton, Box, Group, Affix, Transition, Button } from '@mantine/core';
@@ -29,6 +29,8 @@ export default function TransactionsPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [pageLoadingError, setPageLoadingError] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
 
   const [sortOrder, toggleSortOrder] = useToggle([
     { key: 'desc', label: 'Mais antigos' },
@@ -44,53 +46,62 @@ export default function TransactionsPage() {
     threshold: 0.5,
   });
 
-  useEffect(() => {
-    const loadData = async () => {
-      setPageLoading(true);
+  const loadData = useCallback(async () => {
+    setPageLoading(true);
+    setPageLoadingError(false);
+    setLoadMoreError(false);
 
-      try {
-        const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, null, sortOrder.key);
+    try {
+      const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, null, sortOrder.key);
 
-        if (data) {
-          setTransactions(data.transactions);
-          setCursor(data.nextCursor);
-          setHasMore(!!data.nextCursor);
-        }
-      } catch (error) {
-        console.error('Failed to load transactions:', error);
-      } finally {
-        setPageLoading(false);
+      if (data) {
+        setTransactions(data.transactions);
+        setCursor(data.nextCursor);
+        setHasMore(!!data.nextCursor);
+      } else {
+        setPageLoadingError(true);
       }
-    };
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
+      setPageLoadingError(true);
+    } finally {
+      setPageLoading(false);
+    }
+  }, [sortOrder.key]);
 
+  useEffect(() => {
     loadData();
-  }, [sortOrder]);
+  }, [loadData]);
+
+  const loadMore = useCallback(async () => {
+    if (!cursor) return;
+
+    setLoadingMore(true);
+    setLoadMoreError(false);
+
+    try {
+      const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, cursor, sortOrder.key);
+
+      if (data) {
+        setTransactions((prev) => [...prev, ...data.transactions]);
+        setCursor(data.nextCursor);
+        setHasMore(!!data.nextCursor);
+      } else {
+        setLoadMoreError(true);
+      }
+    } catch (error) {
+      console.error('Failed to load more transactions:', error);
+      setLoadMoreError(true);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [cursor, sortOrder.key]);
 
   useEffect(() => {
-    const loadMore = async () => {
-      if (!cursor) return;
-
-      setLoadingMore(true);
-
-      try {
-        const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, cursor, sortOrder.key);
-
-        if (data) {
-          setTransactions((prev) => [...prev, ...data.transactions]);
-          setCursor(data.nextCursor);
-          setHasMore(!!data.nextCursor);
-        }
-      } catch (error) {
-        console.error('Failed to load more transactions:', error);
-      } finally {
-        setLoadingMore(false);
-      }
-    };
-
-    if (entry?.isIntersecting && hasMore && !loadingMore && !pageLoading) {
+    if (entry?.isIntersecting && hasMore && !loadingMore && !pageLoading && !pageLoadingError && !loadMoreError) {
       loadMore();
     }
-  }, [entry?.isIntersecting, hasMore, loadingMore, pageLoading, cursor, sortOrder]);
+  }, [entry?.isIntersecting, hasMore, loadingMore, pageLoading, pageLoadingError, loadMoreError, loadMore]);
 
   return (
     <>
@@ -123,7 +134,16 @@ export default function TransactionsPage() {
         </Group>
 
         <Stack gap="md">
-          {transactions.length === 0 ? (
+          {pageLoadingError ? (
+            <Stack align="center" p="xl">
+              <Text c="red" fw={500}>
+                Falha ao carregar transações.
+              </Text>
+              <Button onClick={loadData} variant="outline" color="red">
+                Tente novamente
+              </Button>
+            </Stack>
+          ) : transactions.length === 0 && !pageLoading ? (
             <Text c="dimmed" ta="center" size="sm">
               Sem transações
             </Text>
@@ -142,7 +162,18 @@ export default function TransactionsPage() {
               </Skeleton>
             ))}
 
-          {hasMore && !pageLoading && <Box ref={ref} h={1} />}
+          {loadMoreError && (
+            <Stack align="center" p="md">
+              <Text c="red" fw={500}>
+                Falha ao carregar mais transações.
+              </Text>
+              <Button onClick={loadMore} variant="outline" color="red">
+                Tente novamente
+              </Button>
+            </Stack>
+          )}
+
+          {hasMore && !pageLoading && !pageLoadingError && !loadMoreError && <Box ref={ref} h={1} />}
         </Stack>
       </Card>
 

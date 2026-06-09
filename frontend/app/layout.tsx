@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Notifications } from '@mantine/notifications';
 import { MantineProvider, mantineHtmlProps } from '@mantine/core';
 
 import './globals.css';
@@ -16,7 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en" {...mantineHtmlProps}>
       <body>
-        <MantineProvider defaultColorScheme="light">{children}</MantineProvider>
+        <MantineProvider defaultColorScheme="light">
+          {children}
+          <Notifications position="bottom-right" zIndex={1000} />
+        </MantineProvider>
       </body>
     </html>
   );

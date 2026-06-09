@@ -7,8 +7,12 @@ import {
   Stack,
   Text,
   RollingNumber,
+  Button,
+  Overlay,
+  Notification,
+  Anchor,
 } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { CaretDownIcon } from '@phosphor-icons/react';
 
 import { getBalance, type Balance } from '../api/wallet';
@@ -22,17 +26,26 @@ interface BalanceModuleProps {
 export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: BalanceModuleProps) {
   const [expanded, setExpanded] = useState(false);
   const [balance, setBalance] = useState<Balance | null>(null);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const loadData = async () => {
+  const loadData = useCallback(async () => {
+    try {
+      setError(false);
       const balance = await getBalance();
       if (balance) {
         setBalance(balance);
+      } else {
+        setError(true);
       }
-    };
+    } catch (err) {
+      console.error('Failed to load balance:', err);
+      setError(true);
+    }
+  }, []);
 
+  useEffect(() => {
     loadData();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, loadData]);
 
   const totalBalance = balance?.totalInBRL || 0;
 
@@ -111,6 +124,28 @@ export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: B
           ))}
         </Stack>
       </Collapse>
+
+      {error && !balance && (
+        <Overlay color="#fa5252" backgroundOpacity={0.35} blur={3} zIndex={10} center>
+          <Stack align="center" gap="xs">
+            <Text c="dark.9" fw={600}>
+              Falha ao carregar saldo.
+            </Text>
+            <Button onClick={loadData} size="xs" color="red">
+              Tente novamente
+            </Button>
+          </Stack>
+        </Overlay>
+      )}
+
+      {error && balance && (
+        <Notification color="red" mt="md" onClose={() => setError(false)} title="Erro">
+          Falha ao carregar saldo.{' '}
+          <Anchor component="button" size="sm" onClick={loadData}>
+            Tente novamente
+          </Anchor>
+        </Notification>
+      )}
     </Card>
   );
 }
