@@ -9,6 +9,7 @@ import {
   Text,
   Button,
   Overlay,
+  Loader,
 } from '@mantine/core';
 import Link from 'next/link';
 import { CaretDownIcon } from '@phosphor-icons/react';
@@ -45,11 +46,9 @@ export default function TransactionsModule({ refreshTrigger = 0 }: TransactionsM
       setLoading(true);
       setError(false);
       setTransactions(await getTransactions(5));
-      setLoading(false);
     } catch (error) {
       console.error('Failed to load wallet data:', error);
       setError(true);
-      setLoading(false);
 
       if (!isInitialLoad) {
         notifications.show({
@@ -59,6 +58,8 @@ export default function TransactionsModule({ refreshTrigger = 0 }: TransactionsM
           position: 'bottom-right',
         });
       }
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -76,7 +77,10 @@ export default function TransactionsModule({ refreshTrigger = 0 }: TransactionsM
         mb={expanded ? 'md' : undefined}
         style={{ transition: 'margin-bottom 0.2s ease' }}
       >
-        <Text fw={500}>Últimas transações</Text>
+        <Group>
+          <Text fw={500}>Últimas transações</Text>
+          {loading && !isInitialLoad && <Loader size={20} />}
+        </Group>
         <Group>
           <Anchor component={Link} href="/transactions" c="dark">
             Ver todas →
@@ -101,7 +105,7 @@ export default function TransactionsModule({ refreshTrigger = 0 }: TransactionsM
             </Text>
           ) : (
             transactions.map((tx, idx) => (
-              <Skeleton key={`${tx.date}-${idx}`} visible={loading || tx === dummyTransaction}>
+              <Skeleton key={`${tx.date}-${idx}`} visible={loading && isInitialLoad}>
                 <Transaction transaction={tx} />
               </Skeleton>
             ))

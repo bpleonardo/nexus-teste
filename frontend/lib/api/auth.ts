@@ -1,6 +1,4 @@
-import { redirect } from 'next/navigation';
-
-import { request } from './request';
+import { request, redirect } from './request';
 import { InvalidCredentials, UserAlreadyExists } from '../errors';
 
 export function setAccessToken(token: string): void {

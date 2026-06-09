@@ -9,8 +9,9 @@ import {
   RollingNumber,
   Button,
   Overlay,
+  Loader,
 } from '@mantine/core';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { CaretDownIcon } from '@phosphor-icons/react';
 
 import { getBalance, type Balance } from '../api/wallet';
@@ -24,17 +25,21 @@ interface BalanceModuleProps {
 
 export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: BalanceModuleProps) {
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [balance, setBalance] = useState<Balance | null>(null);
 
-  const loadData = useCallback(async () => {
+  const loadData = async () => {
     try {
       setError(false);
-      const balance = await getBalance();
-      if (balance) {
-        setBalance(balance);
+      setLoading(true);
+
+      const newBalance = await getBalance();
+
+      if (newBalance) {
+        setBalance(newBalance);
       } else {
-        setError(true);
+        throw new Error('Failed to load.');
       }
     } catch (err) {
       console.error('Failed to load balance:', err);
@@ -48,21 +53,27 @@ export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: B
           position: 'bottom-right',
         });
       }
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     loadData();
-  }, [refreshTrigger, loadData]);
+  }, [refreshTrigger]);
 
+  const isInitialLoad = !balance;
   const totalBalance = balance?.totalInBRL || 0;
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Group justify="space-between">
-        <Text fw={500} size="lg">
-          Saldo
-        </Text>
+        <Group>
+          <Text fw={500} size="lg">
+            Saldo
+          </Text>
+          {loading && !isInitialLoad && <Loader size={20} />}
+        </Group>
         <ActionIcon variant="subtle" onClick={() => setExpanded(!expanded)}>
           <CaretDownIcon
             size={20}

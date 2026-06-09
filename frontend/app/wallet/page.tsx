@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SimpleGrid, Stack } from '@mantine/core';
+import { Button, SimpleGrid, Stack } from '@mantine/core';
 
 import Navbar from '@/lib/components/Navbar';
 import { KNOWN_CURRENCIES } from '@/lib/constants';
@@ -31,6 +31,9 @@ export default function WalletPage() {
           <WithdrawModule currencyOptions={currencyOptions} onSuccess={triggerUpdate} />
         </Stack>
       </SimpleGrid>
+      <Button fullWidth onClick={() => triggerUpdate()}>
+        Despair!
+      </Button>
     </>
   );
 }

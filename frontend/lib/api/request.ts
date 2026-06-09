@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation';
-
 import { BASE_API_URL } from '../constants';
 import { getAccessToken, refreshAccessToken } from './auth';
 
@@ -25,6 +23,11 @@ type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
 interface ResponseData<T> {
   status: number;
   body: ApiResponse<T> | null;
+}
+
+export function redirect(href: string): never {
+  window.location.href = href;
+  throw new Error('Redirection happening......');
 }
 
 export async function request<T>(

@@ -19,7 +19,9 @@ export default function WithdrawModule({ currencyOptions, onSuccess }: WithdrawM
 
     try {
       setLoading(true);
+
       await withdraw(token, parseFloat(amount));
+
       setAmount('');
       onSuccess?.();
     } catch (err) {
