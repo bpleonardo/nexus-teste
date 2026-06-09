@@ -226,7 +226,7 @@ export class WalletService {
   }
 
   async swap(userId: string, fromCurrency: string, toCurrency: string, amount: number) {
-    const userBalance = await this.getBalance(userId, false, false);
+    const userBalance = await this.getBalance(userId, true, false);
 
     if (userBalance.balance[fromCurrency.toUpperCase()] < amount) {
       throw new BadRequestException({
