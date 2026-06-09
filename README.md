@@ -2,7 +2,9 @@
 
 ## Descrição
 
-Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como parte de um teste prático de desenvolvimento backend. A aplicação permite que usuários se cadastrem, gerenciem suas carteiras e realizem trocas entre tokens e saques, com um sistema completo de auditoria através de um ledger de movimentações.
+A **Carteira Nexus** é uma aplicação full-stack de carteira digital de criptomoedas desenvolvida inicialmente como parte de um teste prático de desenvolvimento backend e posteriormente expandida com uma interface web para consumo da API.
+
+A aplicação permite que usuários se cadastrem, realizem autenticação, acompanhem seus saldos, executem swaps entre moedas, solicitem saques e consultem o histórico completo de movimentações através de uma interface amigável integrada à API.
 
 ---
 
@@ -10,88 +12,114 @@ Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como p
 
 ### 1. **Autenticação**
 
-- [x] Cadastro de usuário (email + senha com hash via argon2)
-- [x] Login com geração de JWT (access token + refresh token)
-- [x] Rotas protegidas por middleware de autenticação
-- [x] Revogação de refresh tokens e access tokens
-- [x] Controle de sessões
+* [x] Cadastro de usuário (email + senha com hash via Argon2)
+* [x] Login com geração de JWT (access token + refresh token)
+* [x] Rotas protegidas por middleware de autenticação
+* [x] Revogação de refresh tokens e access tokens
+* [x] Controle de sessões
+* [x] Renovação automática de sessão no frontend
 
 ### 2. **Carteira e Saldos**
 
-- [x] Criação automática de carteira ao cadastro com saldo zero
-- [x] Suporte para 3 tokens: **BRL**, **BTC**, **ETH**
-- [x] Saldos armazenados no banco com modelo de ledger virtual
-- [x] Endpoint para consultar saldos da carteira
+* [x] Criação automática de carteira ao cadastro com saldo zero
+* [x] Suporte para 3 tokens: **BRL**, **BTC**, **ETH**
+* [x] Saldos armazenados no banco com modelo de ledger virtual
+* [x] Consulta de saldos através da API e interface web
 
 ### 3. **Depósito via Webhook**
 
-- [x] Endpoint `POST /webhooks/deposit` para simular depósitos externos
-- [x] Payload: `{ userId, token, amount, idempotencyKey }`
-- [x] Validação de `idempotencyKey` para evitar depósitos duplicados
+* [x] Endpoint `POST /webhooks/deposit` para simular depósitos externos
+* [x] Payload: `{ userId, token, amount, idempotencyKey }`
+* [x] Validação de `idempotencyKey` para evitar depósitos duplicados
 
 ### 4. **Swap - Conversão entre Tokens**
 
-- [x] Endpoint de cotação: simula conversão entre tokens
-  - Integração com API pública (CoinGecko)
-  - Taxa fixa de 1,5% sobre o valor
-  - Retorna: quantidade de destino, taxa cobrada, cotação usada
-- [x] Endpoint de execução do swap
-  - Validação de saldo suficiente (incluindo taxa)
-  - Débito do token de origem + taxa
-  - Crédito do token de destino
-  - Registro de transação completo
-- [x] Cache de cotações com Redis (reduz chamadas à API externa)
+* [x] Endpoint de cotação com integração à CoinGecko
+* [x] Taxa fixa de 1,5% sobre o valor
+* [x] Simulação de conversão antes da execução
+* [x] Execução do swap com registro completo
+* [x] Cache de cotações com Redis
 
 ### 5. **Saque**
 
-- [x] Endpoint para solicitar saque de um token
-- [x] Validação de saldo suficiente
-- [x] Débito do saldo (transferência é mock)
-- [x] Registro de transação de saque
+* [x] Endpoint para solicitação de saque
+* [x] Validação de saldo suficiente
+* [x] Registro de transação de saque
+* [x] Interface gráfica para solicitação de saques
 
 ### 6. **Ledger de Movimentações**
 
-- [x] Todo débito/crédito gera registro de movimentação
-- [x] Tipos de movimentação: `DEPOSIT`, `SWAP_IN`, `SWAP_OUT`, `SWAP_FEE`, `WITHDRAW`
-- [x] Rastreamento: tipo, token, valor, saldo anterior, saldo novo, data/hora
-- [x] Auditabilidade: saldo pode ser reconstruído a partir das movimentações
-- [x] Endpoint de extrato com paginação
+* [x] Todo débito/crédito gera registro de movimentação
+* [x] Tipos de movimentação:
+
+  * `DEPOSIT`
+  * `SWAP_IN`
+  * `SWAP_OUT`
+  * `SWAP_FEE`
+  * `WITHDRAW`
+* [x] Auditoria completa das operações
+* [x] Extrato paginado
 
 ### 7. **Histórico de Transações**
 
-- [x] Endpoint para listar transações do usuário
-- [x] Registro detalhado: tipo, tokens envolvidos, valores, taxa, data/hora
-- [x] Suporte a paginação
+* [x] Listagem das transações do usuário
+* [x] Registro detalhado das operações
+* [x] Paginação
+* [x] Visualização através do frontend como scroll infinito.
 
-### 8. **Diferenciais Implementados**
+### 8. **Interface Web**
 
-- [x] **Redis para cache** de cotações (evita chamadas repetidas à CoinGecko) e operações (evita estresse no banco)
-- [x] **Docker e Docker Compose** para ambiente containerizado
-- [x] **Estrutura modular** com separação clara de responsabilidades
+* [x] Tela de login
+* [x] Tela de cadastro
+* [x] Dashboard da carteira
+* [x] Visualização de saldos
+* [x] Realização de swaps
+* [x] Solicitação de saques
+* [x] Consulta do histórico de transações
+
+### 9. **Diferenciais Implementados**
+
+* [x] Redis para cache de cotações
+* [x] Docker e Docker Compose
+* [x] Estrutura modular
+* [x] Renovação automática de tokens
+* [x] Nginx como proxy reverso
 
 ---
 
 ## Stack Técnico
 
-### Obrigatório
+### Backend
 
-- **Node.js** com **TypeScript**
-- **PostgreSQL** com **Prisma** (ORM)
-- **Git**
+* Node.js
+* TypeScript
+* NestJS
+* PostgreSQL
+* Prisma
+* Redis
+* JWT
+* Argon2
+* Zod
 
-### Escolhido
+### Frontend
 
-- **NestJS** - Framework robustos para estrutura modular e escalável
-- **Zod** - Validação de dados em tempo de compilação
-- **Redis** - Cache distribuído para cotações
-- **JWT** - Autenticação stateless
-- **Argon2** - Hash seguro de senhas
+* Next.js
+* React
+* TypeScript
+* Mantine
+* API Fetch
+
+### Infraestrutura
+
+* Docker
+* Docker Compose
+* Nginx
 
 ### Ferramentas de Desenvolvimento
 
-- **ESLint** - Linting de código
-- **Prettier** - Formatação de código
-- **Docker** - Deploy do Postgres e Redis
+* ESLint
+* Prettier
+* Git
 
 ---
 
@@ -99,46 +127,69 @@ Isso é uma API REST de uma carteira digital de criptomoedas desenvolvida como p
 
 ### Organização do Código
 
+```text
+nexus-teste/
+├─ backend/
+│  ├─ src/
+│  │  ├─ auth/
+│  │  ├─ wallet/
+│  │  ├─ webhooks/
+│  │  ├─ database/
+│  │  ├─ redis/
+│  │  ├─ pipes/
+│  │  └─ ...
+│  ├─ prisma/
+│  ├─ Dockerfile
+│  └─ ...
+├─ frontend/
+│  ├─ app/
+│  │  ├─ login/
+│  │  ├─ register/
+│  │  ├─ transactions/
+│  │  ├─ wallet/
+│  │  ├─ layout.tsx
+│  │  └─ page.tsx
+│  ├─ lib/
+│  │  ├─ api/
+│  │  │  ├─ auth.ts
+│  │  │  ├─ request.ts
+│  │  │  └─ wallet.ts
+│  │  ├─ components/
+│  │  │  ├─ BalanceModule.tsx
+│  │  │  ├─ Navbar.tsx
+│  │  │  ├─ SwapModule.tsx
+│  │  │  ├─ Transaction.tsx
+│  │  │  ├─ TransactionsModule.tsx
+│  │  │  └─ WithdrawModule.tsx
+│  │  ├─ constants.ts
+│  │  ├─ errors.ts
+│  │  ├─ methods.ts
+│  │  └─ validators.ts
+│  ├─ public/
+│  ├─ Dockerfile
+│  └─ ...
+├─ nginx/
+│  ├─ nginx.conf
+│  └─ Dockerfile
+├─ docker-compose.yml
+└─ README.md
 ```
-src/
-├─ main.ts                      # Entrypoint do servidor
-├─ config.ts                    # Definições de configurações
-├─ constants.ts                 # Constantes não configuráveis
-├─ utils.ts                     # Funções e tipos utilitários
-├─ app.module.ts                # Módulo raiz
-├─ pipes/
-│  ├─ allowed-values.pipe.ts    # Pipe para limitar valores
-│  ├─ parse-float.pipe.ts       # Pipe para converter string -> float
-│  ├─ parse-int.pipe.ts         # Pipe para converter string -> int
-│  ├─ zod-validation.pipe.ts    # Pipe para validar um esquema zod
-├─ auth/                        # Módulo auth/
-│  ├─ dtos/                     # Definições de esquemas zod e tipos
-│  ├─ auth.module.ts            # Módulo
-│  ├─ auth.controller.ts        # Controller do módulo
-│  ├─ auth.service.ts           # Service do módulo
-│  ├─ auth.guard.ts             # Guard global para validar a autenticação
-├─ wallet/                      # Módulo wallet/
-│  ├─ <mesma estrutura>
-├─ webhooks/                    # Módulo webhooks/
-│  ├─ <mesma estrutura>
-├─ database/
-│  ├─ database.module.ts        # Módulo de database para importação
-│  ├─ database.service.ts       # Definição da classe DatabaseService
-├─ redis/
-│  ├─ redis.module.ts           # Módulo redis para importação
-│  ├─ redis.ts                  # Definição do provider REDIS_CLIENT
 
-```
+### Módulos Principais do Backend
 
-> Gerado com https://ascii-tree-generator.com/
-
-### Módulos Principais
-
-1. **AuthModule** - Gerencia autenticação, registro e login
-2. **WalletModule** - Gerencia carteiras, saldos, swaps e saques
+1. **AuthModule** - Gerencia autenticação e sessões
+2. **WalletModule** - Gerencia carteiras, saldos e operações
 3. **WebhooksModule** - Recebe depósitos externos
-4. **DatabaseModule** - Integração com Prisma e PostgreSQL
-5. **RedisModule** - Gerencia cache distribuído
+4. **DatabaseModule** - Integração com PostgreSQL
+5. **RedisModule** - Gerenciamento do cache distribuído
+
+### Responsabilidades do Frontend
+
+* Gerenciamento da navegação
+* Consumo da API
+* Exibição dos dados da carteira
+* Controle da sessão autenticada
+* Interação do usuário com as funcionalidades do sistema
 
 ---
 
@@ -156,126 +207,130 @@ src/
 
 ### Pré-requisitos
 
-- Node.js >= 20.x
-- Yarn ou npm
-- Docker e Docker Compose (opcional, mas recomendado)
-- PostgreSQL (se não usar Docker)
-- Redis (se não usar Docker)
+* Docker e Docker Compose
+* Node.js >= 20.x (caso não utilize Docker)
+* Yarn
+
+---
 
 ### Instalação com Docker (Recomendado)
 
-1. **Clone o repositório:**
-
-```bash
-git clone https://github.com/bpleonardo/nexus-teste
-cd nexus-teste
-```
-
-2. **Configure as variáveis de ambiente:**
-
-```bash
-cp .env.example .env
-```
-
-Preencha o arquivo `.env` com suas credenciais:
-
-```env
-# Banco de dados PostgreSQL
-DB_URL=postgresql://postgres:<SUA_SENHA_AQUI>@postgres:5432/public
-DB_USERNAME=postgres
-DB_PASSWORD=<SUA_SENHA_AQUI>
-
-# Redis (deixe vazio se não usar autenticação)
-REDIS_URL=redis://redis:6379
-REDIS_USERNAME=
-REDIS_PASSWORD=
-
-# JWT
-JWT_SECRET=sua_chave_super_secreta_aqui
-```
-
-3. **Inicie os containers:**
-
-```bash
-docker-compose up
-```
-
-4. **A API estará disponível em `http://localhost/api`**
-
-### Instalação Local (Sem Docker)
-
-1. **Clone e entre no diretório:**
+1. Clone o repositório:
 
 ```bash
 git clone https://github.com/bpleonardo/nexus-teste.git
 cd nexus-teste
 ```
 
-2. **Instale as dependências:**
+2. Configure os arquivos `.env` conforme os exemplos disponibilizados no projeto.
+
+3. Execute:
 
 ```bash
+docker compose up
+```
+
+Esse comando inicializará:
+
+* Frontend (Next.js)
+* Backend (NestJS)
+* PostgreSQL
+* Redis
+* Nginx
+
+Após a inicialização:
+
+* Aplicação: `http://localhost`
+* API: `http://localhost/api`
+
+---
+
+### Execução Local (Sem Docker)
+
+#### Backend
+
+```bash
+cd backend
+
 yarn install
-```
 
-3. **Configure o banco de dados e Redis:**
-   - PostgreSQL: `postgresql://user:password@localhost:5432/public`
-   - Redis: `redis://localhost:6379`
-
-4. **Configure variáveis de ambiente:**
-
-```bash
-cp .env.example .env
-# Edite .env com suas credenciais
-```
-
-5. **Execute as migrações:**
-
-```bash
 yarn prisma migrate deploy
-```
 
-6. **Inicie o servidor:**
-
-```bash
 yarn start
 ```
 
-7. **A API estará em `http://localhost:3000`**
+A API estará disponível em:
+
+```text
+http://localhost:8080
+```
+
+---
+
+#### Frontend
+
+```bash
+cd frontend
+
+yarn install
+
+yarn start
+```
+
+O frontend estará disponível em:
+
+```text
+http://localhost:3000
+```
+
+---
 
 ## Endpoints Principais
 
-> Para testar a API, recomendo usar o Postman. Você pode importar a coleção de endpoints disponível em `resources/postman.collection.json`.
-
 ### Autenticação
 
-- `POST /auth/register` - Registrar novo usuário
-- `POST /auth/login` - Login e obter tokens
-- `POST /auth/refresh` - Renovar access token
-- `POST /auth/logout` - Invalidar sessão (todas ou somente a atual)
-- `GET /auth/me` - Informações do usuário logado
+* `POST /auth/register`
+* `POST /auth/login`
+* `POST /auth/refresh`
+* `POST /auth/logout`
+* `GET /auth/me`
 
 ### Carteira
 
-- `GET /wallet/quote/:from` - Obter cotação de conversão.
-- `GET /wallet/balance` - Obter saldo do usuário
-- `GET /wallet/movements` - Obter movimentações individuais do usuário
-- `GET /wallet/transactions` - Obter transações individuais do usuário
-- `POST /wallet/withdraw` - Realizar o saque de um token
-- `POST /wallet/swap` - Realizar a troca entre dois tokens
+* `GET /wallet/quote/:from`
+* `GET /wallet/balance`
+* `GET /wallet/movements`
+* `GET /wallet/transactions`
+* `POST /wallet/withdraw`
+* `POST /wallet/swap`
 
 ### Webhooks
 
-- `POST /webhooks/deposit` - Receber depósito externo (com validação de idempotencyKey)
+* `POST /webhooks/deposit`
 
 ---
 
 ## Decisões de Segurança
 
-1. **Senha:** Hash com Argon2 (resistente a ataques de força bruta)
-2. **Autenticação:** JWT com access token de curta-vida e refresh token de longa-vida
-3. **Refresh Token:** Armazenado em banco com possível revocação
-4. **Validação:** Zod para tipagem e validação de entrada
-5. **Idempotência:** Webhooks protegidos contra duplicação
+### Senhas com Argon2
+
+As senhas são armazenadas utilizando Argon2, algoritmo moderno e resistente a ataques de força bruta.
+
+### JWT com Refresh Token
+
+A autenticação utiliza access tokens de curta duração e refresh tokens de longa duração.
+
+### Revogação de Sessões
+
+Refresh tokens podem ser invalidados, permitindo encerramento seguro das sessões.
+
+### Idempotência em Webhooks
+
+Depósitos externos utilizam `idempotencyKey` para evitar duplicidade.
+
+### Validação de Entrada
+
+As entradas do backend são validadas utilizando Zod.
 
 ---
 
@@ -283,82 +338,115 @@ yarn start
 
 ### Por que NestJS?
 
-- Estrutura modular nativa com decoradores
-- Injeção de dependência integrada
-- Documentação excelente
-- Similaridade com ASP.NET do C#
+* Estrutura modular nativa
+* Injeção de dependência integrada
+* Excelente documentação
+* Similaridade com ASP.NET Core
 
 ### Por que Prisma?
 
-- ORM focada em Typescript
-- Migrações automáticas
-- Queries integradas com o editor (typescript)
+* ORM voltada para TypeScript
+* Migrações automatizadas
+* Excelente experiência de desenvolvimento
 
 ### Por que Redis?
 
-- Reduz latência e carga na API externa e banco de dados
-- Suporte a TTL para expiração automática
+* Reduz chamadas repetidas para APIs externas
+* Diminui carga sobre o banco de dados
+* TTL nativo para expiração automática
 
-### Por que Zod?
+### Por que Next.js?
 
-- Validação de schemas em tempo de runtime
-- Parsing automático com inferência de tipos TypeScript
-- Mensagens de erros descritivas
-- Ótimo para utilização com DTOs
+* Estrutura moderna baseada em React
+* Roteamento baseado em arquivos
+* Boa experiência de desenvolvimento
+* Recursos que favorecem SEO quando necessário
+
+### Por que Mantine?
+
+* Grande quantidade de componentes prontos
+* Redução significativa do tempo gasto com estilização
+* Consistência visual entre as páginas
+* Permite focar nas regras de negócio da aplicação
+
+### Por que Fetch API?
+
+* API nativa do navegador
+* Elimina dependências desnecessárias
+* Atende completamente às necessidades atuais do projeto
+
+### Por que armazenar o token no LocalStorage?
+
+O armazenamento do token no LocalStorage simplifica o gerenciamento da sessão e permite acesso rápido às informações necessárias para autenticação das requisições.
+
+Para minimizar impactos da expiração do token, foi implementado um mecanismo automático de renovação:
+
+1. O token é anexado às requisições.
+2. Caso a API retorne `INVALID_TOKEN`, o frontend solicita um novo access token.
+3. A requisição original é executada novamente.
+4. Caso a renovação falhe, o usuário é redirecionado para realizar novo login.
 
 ### Modelo de Resposta Consistente
 
-Todas as respostas seguem um padrão:
+Todas as respostas seguem o padrão:
 
-**Sucesso:**
+**Sucesso**
 
 ```json
 {
   "success": true,
-  "data": { ... }
+  "data": {}
 }
 ```
 
-**Erro:**
+**Erro**
 
 ```json
 {
   "success": false,
   "message": "Descrição do erro",
-  "data": { ... }
+  "data"?: {}
 }
 ```
 
 ### Por que Ledger de Movimentações?
 
-- Auditoria completa de todos os movimentos
-- Saldo sempre pode ser recalculado
-- ***
+* Auditoria completa
+* Reconstrução do saldo a partir do histórico
+* Maior rastreabilidade das operações financeiras
+
+---
 
 ## Checklist de Requisitos
 
-- [x] Autenticação (registro, login, JWT, refresh token)
-- [x] Carteira com 3 tokens (BRL, BTC, ETH)
-- [x] Depósito via webhook com idempotencyKey
-- [x] Swap com cotação real e taxa 1,5%
-- [x] Saque com validação de saldo
-- [x] Ledger de movimentações completo
-- [x] Histórico de transações com paginação
-- [x] README com decisões técnicas
-- [x] Redis para cache de cotações
-- [x] TypeScript com tipagem forte
-- [x] Validação com Zod
-- [x] Tratamento de erros e casos de borda
-- [x] Auditoria via ledger
+* [x] Autenticação com JWT e refresh token
+* [x] Controle de sessões
+* [x] Carteira com BRL, BTC e ETH
+* [x] Depósito via webhook com idempotência
+* [x] Swap com cotação real e taxa de 1,5%
+* [x] Saque com validação de saldo
+* [x] Ledger completo de movimentações
+* [x] Histórico de transações paginado
+* [x] Redis para cache
+* [x] Docker e Docker Compose
+* [x] TypeScript
+* [x] Validação com Zod
+* [x] Tratamento de erros
+* [x] Auditoria financeira via ledger
+* [x] Frontend para interação com a API
+* [x] Renovação automática de tokens no cliente
 
 ---
 
 ## Tratamento de Casos de Borda
 
-1. **Depósito duplicado:** Validado via `idempotencyKey`
-2. **Saldo insuficiente:** Erro antes de debitar
-3. **Usuário/token não existente:** Erro apropriado
-4. **Precisão de valores:** Decimal(20,8) para moedas cripto
-5. **Race conditions:** Transações atômicas no banco
-6. **Token expirado:** Refresh automático via refresh token
-7. **Taxa de câmbio desatualizada:** Cache com TTL curto
+1. Depósito duplicado via webhook
+2. Saldo insuficiente para saque ou swap
+3. Usuário inexistente
+4. Token inválido ou expirado
+5. Precisão de valores utilizando `Decimal(20,8)`
+6. Race conditions mitigadas através de transações atômicas
+7. Taxas de câmbio desatualizadas mitigadas com cache de curta duração
+8. Renovação automática da sessão em caso de expiração do access token
+
+---

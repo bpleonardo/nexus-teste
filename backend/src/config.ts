@@ -5,7 +5,7 @@ const e = process.env;
 export default () => {
   const data = {
     app: {
-      port: parseInt(e.PORT || '3000'),
+      port: parseInt(e.PORT || '8080'),
       transactionTax: parseFloat(e.TRANSACTION_TAX || '1.5') / 100,
     },
     database: {
