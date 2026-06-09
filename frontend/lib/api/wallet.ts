@@ -64,7 +64,7 @@ export async function getTransactions(
     throw new Error(response.body?.message || 'Falha ao carregar transações.');
   }
 
-  return response.body.data.transactions;
+  return response.body.data;
 }
 
 export async function getQuote(from: string, to: string, amount: number) {

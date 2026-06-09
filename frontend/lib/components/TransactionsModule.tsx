@@ -45,7 +45,7 @@ export default function TransactionsModule({ refreshTrigger = 0 }: TransactionsM
     try {
       setLoading(true);
       setError(false);
-      setTransactions(await getTransactions(5));
+      setTransactions((await getTransactions(5)).transactions);
     } catch (error) {
       console.error('Failed to load wallet data:', error);
       setError(true);

@@ -7,7 +7,7 @@ import { Card, Text, Stack, Skeleton, Box, Group, Affix, Transition, Button } fr
 
 import Navbar from '@/lib/components/Navbar';
 import Transaction from '@/lib/components/Transaction';
-import { getPaginatedTransactions, TransactionType } from '@/lib/api/wallet';
+import { getTransactions, TransactionType } from '@/lib/api/wallet';
 
 const dummyTransaction: TransactionType = {
   date: new Date().toDateString(),
@@ -51,7 +51,7 @@ export default function TransactionsPage() {
     setLoadMoreError(false);
 
     try {
-      const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, null, sortOrder.key);
+      const data = await getTransactions(TRANSACTIONS_PER_FETCH, null, sortOrder.key);
 
       if (data) {
         setTransactions(data.transactions);
@@ -79,7 +79,7 @@ export default function TransactionsPage() {
     setLoadMoreError(false);
 
     try {
-      const data = await getPaginatedTransactions(TRANSACTIONS_PER_FETCH, cursor, sortOrder.key);
+      const data = await getTransactions(TRANSACTIONS_PER_FETCH, cursor, sortOrder.key);
 
       if (data) {
         setTransactions((prev) => [...prev, ...data.transactions]);
