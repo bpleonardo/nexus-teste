@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react';
 
 import { executeSwap, getQuote, QuoteResponse } from '../api/wallet';
+import { formatCurrency } from '../methods';
 
 interface SwapModuleProps {
   currencyOptions: { value: string; label: string }[];
@@ -28,8 +29,8 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
 
   const [amount, setAmount] = useState('');
 
-  const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(false);
+  const [quote, setQuote] = useState<QuoteResponse | null>(null);
 
   const [loadingSwap, setLoadingSwap] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
@@ -38,6 +39,7 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
     setOriginToken(destinationToken);
     setDestinationToken(originToken);
     setQuote(null);
+    setQuoteError(null);
   };
 
   useEffect(() => {
@@ -94,6 +96,7 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
         color: 'red',
         title: 'Erro',
         message: 'Falha ao realizar o swap. Tente novamente.',
+        position: 'bottom-right',
       });
     } finally {
       setLoadingSwap(false);
@@ -151,16 +154,12 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
           <Stack gap="xs">
             <Group justify="space-between">
               <Text c="dimmed">Você paga</Text>
-              <Text fw={500}>
-                {amount} {originToken}
-              </Text>
+              <Text fw={500}>{formatCurrency(parseFloat(amount), originToken!)}</Text>
             </Group>
 
             <Group justify="space-between">
               <Text c="dimmed">Taxa (1,5%)</Text>
-              <Text fw={500}>
-                {quote.tax.toFixed(8)} {destinationToken}
-              </Text>
+              <Text fw={500}>{formatCurrency(quote.tax, destinationToken!)}</Text>
             </Group>
 
             <Divider />
@@ -168,7 +167,7 @@ export default function SwapModule({ currencyOptions, onSuccess }: SwapModulePro
             <Group justify="space-between">
               <Text fw={700}>Você recebe</Text>
               <Text fw={700} size="lg">
-                {quote.amount.toFixed(8)} {destinationToken}
+                {formatCurrency(quote.amount, destinationToken!)}
               </Text>
             </Group>
           </Stack>

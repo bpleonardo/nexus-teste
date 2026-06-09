@@ -8,9 +8,8 @@ import { useDisclosure } from '@mantine/hooks';
 import { CaretDownIcon, SignOutIcon } from '@phosphor-icons/react';
 import { Anchor, Avatar, Group, Menu, Text, Burger, Collapse, Stack, Box } from '@mantine/core';
 
-import { logout } from '../api/wallet';
 import { getFirstAndLastName, getInitials } from '../methods';
-import { clearAccessToken, getAccessToken } from '@/lib/auth';
+import { logout, getAccessToken } from '../api/auth';
 
 export default function Navbar() {
   const router = useRouter();
@@ -29,16 +28,6 @@ export default function Navbar() {
       }
     }
   }, []);
-
-  const doLogout = async () => {
-    try {
-      await logout();
-      clearAccessToken();
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   return (
     <Box mb="md">
@@ -72,7 +61,7 @@ export default function Navbar() {
               </Group>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item onClick={doLogout} leftSection={<SignOutIcon size={20} />} color="red">
+              <Menu.Item onClick={logout} leftSection={<SignOutIcon size={20} />} color="red">
                 Sair
               </Menu.Item>
             </Menu.Dropdown>
@@ -97,7 +86,7 @@ export default function Navbar() {
               </Avatar>
               <Text fw={500}>{getFirstAndLastName(username)}</Text>
             </Group>
-            <SignOutIcon size={24} color="red" onClick={doLogout} style={{ cursor: 'pointer' }} />
+            <SignOutIcon size={24} color="red" onClick={logout} style={{ cursor: 'pointer' }} />
           </Group>
         </Stack>
       </Collapse>

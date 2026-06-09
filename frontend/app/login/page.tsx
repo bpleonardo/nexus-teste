@@ -16,11 +16,11 @@ import {
   Text,
 } from '@mantine/core';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-import { login } from '@/lib/auth';
+import { login } from '@/lib/api/auth';
 import { InvalidCredentials } from '@/lib/errors';
 
 const theme = createTheme({
@@ -69,8 +69,11 @@ export default function LoginPage() {
     } catch (err) {
       if (err instanceof InvalidCredentials) {
         setError('Email ou senha inválidos.');
+      } else if (err instanceof TypeError) {
+        setError('Falha ao se comunicar com o servidor. Tente novamente.');
       } else {
         setError('Ocorreu um erro ao tentar fazer login. Tente novamente.');
+        throw err;
       }
     }
   });

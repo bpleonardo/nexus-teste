@@ -9,14 +9,13 @@ import {
   RollingNumber,
   Button,
   Overlay,
-  Notification,
-  Anchor,
 } from '@mantine/core';
 import { useEffect, useState, useCallback } from 'react';
 import { CaretDownIcon } from '@phosphor-icons/react';
 
 import { getBalance, type Balance } from '../api/wallet';
 import { primaryCurrency, CURRENCY_SYMBOLS } from '../constants';
+import { notifications } from '@mantine/notifications';
 
 interface BalanceModuleProps {
   currencyOptions: { label: string; value: string }[];
@@ -24,9 +23,9 @@ interface BalanceModuleProps {
 }
 
 export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: BalanceModuleProps) {
+  const [error, setError] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [balance, setBalance] = useState<Balance | null>(null);
-  const [error, setError] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -40,6 +39,15 @@ export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: B
     } catch (err) {
       console.error('Failed to load balance:', err);
       setError(true);
+
+      if (balance) {
+        notifications.show({
+          color: 'red',
+          title: 'Erro',
+          message: 'Falha ao atualizar o saldo. Tente recarregar a página.',
+          position: 'bottom-right',
+        });
+      }
     }
   }, []);
 
@@ -136,15 +144,6 @@ export default function BalanceModule({ currencyOptions, refreshTrigger = 0 }: B
             </Button>
           </Stack>
         </Overlay>
-      )}
-
-      {error && balance && (
-        <Notification color="red" mt="md" onClose={() => setError(false)} title="Erro">
-          Falha ao carregar saldo.{' '}
-          <Anchor component="button" size="sm" onClick={loadData}>
-            Tente novamente
-          </Anchor>
-        </Notification>
       )}
     </Card>
   );

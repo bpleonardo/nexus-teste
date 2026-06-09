@@ -16,7 +16,6 @@ export function validateCPF(cpf: string): boolean {
   const digit1 = mod < 2 ? 0 : 11 - mod;
 
   if (digit1 !== parseInt(cpf.charAt(9))) {
-    console.debug('First digit does not match:', digit1, cpf.charAt(9));
     return false;
   }
 
@@ -30,6 +29,5 @@ export function validateCPF(cpf: string): boolean {
 
   const digit2 = mod < 2 ? 0 : 11 - mod;
 
-  console.debug('Second digit:', digit2, cpf.charAt(10));
   return digit2 === parseInt(cpf.charAt(10));
 }

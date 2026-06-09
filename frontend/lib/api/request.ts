@@ -1,4 +1,6 @@
-import { BASE_API_URL } from './constants';
+import { redirect } from 'next/navigation';
+
+import { BASE_API_URL } from '../constants';
 import { getAccessToken, refreshAccessToken } from './auth';
 
 interface ErrorResponse {
@@ -18,12 +20,12 @@ interface RequestOptions extends Omit<RequestInit, 'headers'> {
   needsAuth?: boolean;
 }
 
-export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
+type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
 
-export type ResponseData<T> = {
+interface ResponseData<T> {
   status: number;
   body: ApiResponse<T> | null;
-};
+}
 
 export async function request<T>(
   url: string,
@@ -39,7 +41,7 @@ export async function request<T>(
     const token = getAccessToken();
 
     if (!token) {
-      window.location.href = '/login';
+      redirect('/login');
     }
 
     headers['Authorization'] = `Bearer ${token}`;
@@ -75,8 +77,7 @@ export async function request<T>(
       }
     } else if (data?.success === false && data.code === 'MISSING_TOKEN') {
       // If token is missing, redirect to login
-      console.log('Token missing. Redirecting to login.');
-      window.location.href = '/login';
+      redirect('/login');
     }
   }
 

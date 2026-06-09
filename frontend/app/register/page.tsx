@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import {
   Container,
   Paper,
@@ -15,12 +14,14 @@ import {
   PasswordInput,
   Alert,
 } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useEffect, useState, useRef } from 'react';
-import { validateCPF } from '@/lib/validators';
 import zxcvbn from 'zxcvbn';
+import { useForm } from '@mantine/form';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
 import { UserCircleIcon, MapPinIcon, IdentificationCardIcon } from '@phosphor-icons/react';
-import { register } from '@/lib/auth';
+
+import { register } from '@/lib/api/auth';
+import { validateCPF } from '@/lib/validators';
 import { UserAlreadyExists } from '@/lib/errors';
 
 function getStrengthColor(strength: number) {
@@ -41,26 +42,12 @@ function getStrengthColor(strength: number) {
 export default function RegisterPage() {
   const router = useRouter();
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-
-    if (token) {
-      router.push('/wallet');
-    }
-  }, [router]);
-
-  const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const nameRef = useRef<HTMLInputElement>(null);
   const streetRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (active === 0) nameRef.current?.focus();
-    if (active === 1) streetRef.current?.focus();
-    if (active === 2) emailRef.current?.focus();
-  }, [active]);
 
   const validatePassword = (value: string) => {
     if (value.length < 8) {
@@ -75,8 +62,9 @@ export default function RegisterPage() {
     ]);
   };
 
-  const nextStep = async () => {
+  const nextStep = () => {
     const result = form.validate();
+
     if (!result.hasErrors) {
       setActive((current) => (current < 3 ? current + 1 : current));
     }
@@ -145,9 +133,6 @@ export default function RegisterPage() {
     validateInputOnBlur: true,
   });
 
-  const strength = validatePassword(form.values.password).score;
-  const color = getStrengthColor(strength);
-
   const handleSubmit = form.onSubmit(async (values) => {
     try {
       await register({
@@ -173,6 +158,23 @@ export default function RegisterPage() {
     }
   });
 
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+
+    if (token) {
+      router.push('/wallet');
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (active === 0) nameRef.current?.focus();
+    if (active === 1) streetRef.current?.focus();
+    if (active === 2) emailRef.current?.focus();
+  }, [active]);
+
+  const strength = validatePassword(form.values.password).score;
+  const color = getStrengthColor(strength);
+
   return (
     <Container p="lg">
       <Paper shadow="md" p="lg" radius="md" withBorder>
@@ -194,6 +196,7 @@ export default function RegisterPage() {
             {error}
           </Alert>
         )}
+
         <form onSubmit={handleSubmit}>
           <Stepper active={active}>
             <Stepper.Step
@@ -202,8 +205,8 @@ export default function RegisterPage() {
               icon={<UserCircleIcon size={22} />}
             >
               <TextInput
-                ref={nameRef}
                 {...form.getInputProps('name')}
+                ref={nameRef}
                 label="Nome completo"
                 placeholder="Digite seu nome completo"
                 required
@@ -213,19 +216,16 @@ export default function RegisterPage() {
                 placeholder="000.000.000-00"
                 mask="999.999.999-99"
                 required
-                onChangeRaw={(value) => form.setFieldValue('cpf', value)}
-                onBlur={() => form.validateField('cpf')}
-                error={form.errors.cpf}
                 mt="md"
+                error={form.errors.cpf}
+                onBlur={() => form.validateField('cpf')}
+                onChangeRaw={(value) => form.setFieldValue('cpf', value)}
               />
               <MaskInput
                 label="Telefone"
                 placeholder="(00) 00000-0000"
                 mask="(99) 99999-9999"
                 required
-                onChangeRaw={(value) => form.setFieldValue('phone', value)}
-                onBlur={() => form.validateField('phone')}
-                error={form.errors.phone}
                 mt="md"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -233,6 +233,9 @@ export default function RegisterPage() {
                     nextStep();
                   }
                 }}
+                error={form.errors.phone}
+                onBlur={() => form.validateField('phone')}
+                onChangeRaw={(value) => form.setFieldValue('phone', value)}
               />
             </Stepper.Step>
             <Stepper.Step
@@ -243,8 +246,8 @@ export default function RegisterPage() {
               <Grid>
                 <Grid.Col span={{ base: 12, sm: 8 }}>
                   <TextInput
-                    ref={streetRef}
                     {...form.getInputProps('street')}
+                    ref={streetRef}
                     label="Logradouro"
                     placeholder="Digite seu logradouro"
                     required
@@ -278,9 +281,6 @@ export default function RegisterPage() {
                 placeholder="00000-000"
                 mask="99999-999"
                 required
-                onChangeRaw={(value) => form.setFieldValue('zip', value)}
-                onBlur={() => form.validateField('zip')}
-                error={form.errors.zip}
                 mt="md"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -288,6 +288,9 @@ export default function RegisterPage() {
                     nextStep();
                   }
                 }}
+                error={form.errors.zip}
+                onBlur={() => form.validateField('zip')}
+                onChangeRaw={(value) => form.setFieldValue('zip', value)}
               />
             </Stepper.Step>
             <Stepper.Step
@@ -296,8 +299,8 @@ export default function RegisterPage() {
               icon={<IdentificationCardIcon size={22} />}
             >
               <TextInput
-                ref={emailRef}
                 {...form.getInputProps('email')}
+                ref={emailRef}
                 label="Email"
                 type="email"
                 placeholder="nome@empresa.com"
@@ -316,8 +319,8 @@ export default function RegisterPage() {
                 <Progress
                   size="xs"
                   color={color}
-                  value={strength < 1 ? 0 : 100}
                   transitionDuration={0}
+                  value={strength < 1 ? 0 : 100}
                 />
                 <Progress
                   size="xs"
@@ -349,8 +352,8 @@ export default function RegisterPage() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
-                    form.onSubmit(async (values) => {
-                      await handleSubmit({ preventDefault: () => {} } as any);
+                    form.onSubmit(() => {
+                      handleSubmit({ preventDefault: () => {} } as any);
                     })(new Event('submit') as any);
                   }
                 }}

@@ -1,8 +1,4 @@
-import { request } from '../request';
-
-export interface BalanceResponse {
-  balance: Balance;
-}
+import { request } from './request';
 
 export interface Balance {
   [currency: string]: number;
@@ -19,10 +15,9 @@ export interface TransactionType {
   date: string;
 }
 
-export interface TransactionsResponse {
-  transactions: TransactionType[];
-  total: number;
-  nextCursor: string | null;
+export interface WithdrawRequest {
+  currency: string;
+  amount: number;
 }
 
 export interface QuoteResponse {
@@ -31,13 +26,8 @@ export interface QuoteResponse {
   quote: number;
 }
 
-export interface WithdrawRequest {
-  currency: string;
-  amount: number;
-}
-
 export async function getBalance() {
-  const response = await request<BalanceResponse>('/wallet/balance', {
+  const response = await request<{ balance: Balance }>('/wallet/balance', {
     method: 'GET',
   });
 
@@ -48,47 +38,39 @@ export async function getBalance() {
   return response.body?.data?.balance;
 }
 
-export async function getTransactions(limit: number = 5) {
-  const response = await request<TransactionsResponse>(
-    `/wallet/transactions?limit=${limit}&sort=desc`,
-    {
-      method: 'GET',
-      needsAuth: true,
-    },
-  );
+export async function getTransactions(
+  limit: number = 5,
+  cursor?: string | null,
+  sort: string = 'desc',
+) {
+  const queryParams = new URLSearchParams({
+    limit: limit.toString(),
+    sort,
+  });
+
+  if (cursor) {
+    queryParams.append('cursor', cursor);
+  }
+
+  const response = await request<{
+    transactions: TransactionType[];
+    total: number;
+    nextCursor: string | null;
+  }>(`/wallet/transactions?${queryParams.toString()}`, {
+    method: 'GET',
+  });
 
   if (!response.body || response.body?.success === false) {
-    throw new Error(response.body?.message || 'Failed to fetch transactions');
+    throw new Error(response.body?.message || 'Falha ao carregar transações.');
   }
 
   return response.body.data.transactions;
 }
 
-export async function getPaginatedTransactions(
-  limit: number = 15,
-  cursor?: string | null,
-  sort: string = 'desc',
-) {
-  let url = `/wallet/transactions?limit=${limit}&sort=${sort}`;
-  if (cursor) {
-    url += `&cursor=${cursor}`;
-  }
-
-  const response = await request<TransactionsResponse>(url, {
-    method: 'GET',
-    needsAuth: true,
-  });
-
-  if (response.body?.success === false) {
-    throw new Error(response.body.message);
-  }
-
-  return response.body?.data;
-}
-
 export async function getQuote(from: string, to: string, amount: number) {
   const response = await request<QuoteResponse>(`/wallet/quote/${from}/${to}?amount=${amount}`, {
     method: 'GET',
+    needsAuth: false,
   });
 
   if (response.body?.success === false) {
@@ -99,37 +81,20 @@ export async function getQuote(from: string, to: string, amount: number) {
 }
 
 export async function executeSwap(from: string, to: string, amount: number) {
-  const response = await request<{ transactionId: string }>('/wallet/swap', {
+  const response = await request('/wallet/swap', {
     method: 'POST',
     body: JSON.stringify({ fromCurrency: from, toCurrency: to, amount }),
-    needsAuth: true,
   });
 
   if (response.body?.success === false) {
     throw new Error(response.body.message);
   }
-
-  return response.body?.data;
 }
 
 export async function withdraw(currency: string, amount: number) {
-  const response = await request<{ transactionId: string }>('/wallet/withdraw', {
+  const response = await request('/wallet/withdraw', {
     method: 'POST',
     body: JSON.stringify({ currency, amount }),
-    needsAuth: true,
-  });
-
-  if (response.body?.success === false) {
-    throw new Error(response.body.message);
-  }
-
-  return response.body?.data;
-}
-
-export async function logout() {
-  const response = await request<null>('/auth/logout', {
-    method: 'POST',
-    needsAuth: true,
   });
 
   if (response.body?.success === false) {

@@ -27,17 +27,16 @@ export default function TransactionsPage() {
 
   const [transactions, setTransactions] = useState(dummyTransactionsList);
   const [pageLoading, setPageLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const [pageLoadingError, setPageLoadingError] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
+  const [cursor, setCursor] = useState<string | null>(null);
 
   const [sortOrder, toggleSortOrder] = useToggle([
     { key: 'desc', label: 'Mais antigos' },
     { key: 'asc', label: 'Mais novos' },
   ]);
-
-  const [cursor, setCursor] = useState<string | null>(null);
 
   const [scroll, scrollTo] = useWindowScroll();
 
@@ -98,10 +97,25 @@ export default function TransactionsPage() {
   }, [cursor, sortOrder.key]);
 
   useEffect(() => {
-    if (entry?.isIntersecting && hasMore && !loadingMore && !pageLoading && !pageLoadingError && !loadMoreError) {
+    if (
+      entry?.isIntersecting &&
+      hasMore &&
+      !loadingMore &&
+      !pageLoading &&
+      !pageLoadingError &&
+      !loadMoreError
+    ) {
       loadMore();
     }
-  }, [entry?.isIntersecting, hasMore, loadingMore, pageLoading, pageLoadingError, loadMoreError, loadMore]);
+  }, [
+    entry?.isIntersecting,
+    hasMore,
+    loadingMore,
+    pageLoading,
+    pageLoadingError,
+    loadMoreError,
+    loadMore,
+  ]);
 
   return (
     <>
@@ -125,7 +139,6 @@ export default function TransactionsPage() {
                 ></SortAscendingIcon>
               }
               variant="default"
-              style={{ transition: 'width 0.2s' }}
               onClick={() => toggleSortOrder()}
             >
               {sortOrder.label}
@@ -173,7 +186,9 @@ export default function TransactionsPage() {
             </Stack>
           )}
 
-          {hasMore && !pageLoading && !pageLoadingError && !loadMoreError && <Box ref={ref} h={1} />}
+          {hasMore && !pageLoading && !pageLoadingError && !loadMoreError && (
+            <Box ref={ref} h={1} />
+          )}
         </Stack>
       </Card>
 
