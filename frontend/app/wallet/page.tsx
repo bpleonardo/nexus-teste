@@ -31,9 +31,6 @@ export default function WalletPage() {
           <WithdrawModule currencyOptions={currencyOptions} onSuccess={triggerUpdate} />
         </Stack>
       </SimpleGrid>
-      <Button fullWidth onClick={() => triggerUpdate()}>
-        Despair!
-      </Button>
     </>
   );
 }
